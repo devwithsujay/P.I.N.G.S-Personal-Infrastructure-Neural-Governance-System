@@ -1,0 +1,18 @@
+{
+  "name": "P.I.N.G.S Core v2",
+  "short_name": "P.I.N.G.S",
+  "description": "Personal Intelligence Network Graph System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0f",
+  "theme_color": "#0d0d0f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/pings-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

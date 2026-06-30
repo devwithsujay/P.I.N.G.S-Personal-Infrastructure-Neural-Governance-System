@@ -1,0 +1,63 @@
+use_default_settings: true
+general:
+  instance_name: "PINGS SearXNG"
+  debug: false
+
+search:
+  safe_search: 0
+  autocomplete: "google"
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "${SEARXNG_SECRET_KEY:-changeme-in-production}"
+  image_proxy: true
+
+ui:
+  static_use_hash: true
+  default_locale: "en"
+  default_theme: "simple"
+
+outgoing:
+  request_timeout: 5.0
+  max_request_timeout: 15.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 20
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+
+  - name: stackoverflow
+    engine: stackoverflow
+    shortcut: so
+    disabled: false
+
+  - name: arxiv
+    engine: arxiv
+    shortcut: ar
+    disabled: false
+
+limiter: false

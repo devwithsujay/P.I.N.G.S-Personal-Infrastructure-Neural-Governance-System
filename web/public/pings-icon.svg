@@ -1,0 +1,15 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="28" fill="#0d0d0f"/>
+  <circle cx="64" cy="64" r="12" fill="#6c5ce7"/>
+  <circle cx="64" cy="64" r="28" stroke="#6c5ce7" stroke-width="3" opacity="0.7"/>
+  <circle cx="64" cy="64" r="44" stroke="#6c5ce7" stroke-width="2" opacity="0.4"/>
+  <circle cx="64" cy="64" r="58" stroke="#6c5ce7" stroke-width="1" opacity="0.2"/>
+  <circle cx="64" cy="36" r="4" fill="#a29bfe" opacity="0.9"/>
+  <circle cx="88" cy="52" r="3" fill="#a29bfe" opacity="0.7"/>
+  <circle cx="84" cy="84" r="3.5" fill="#a29bfe" opacity="0.6"/>
+  <circle cx="44" cy="88" r="3" fill="#a29bfe" opacity="0.5"/>
+  <line x1="64" y1="64" x2="64" y2="36" stroke="#a29bfe" stroke-width="1" opacity="0.3"/>
+  <line x1="64" y1="64" x2="88" y2="52" stroke="#a29bfe" stroke-width="1" opacity="0.25"/>
+  <line x1="64" y1="64" x2="84" y2="84" stroke="#a29bfe" stroke-width="1" opacity="0.25"/>
+  <line x1="64" y1="64" x2="44" y2="88" stroke="#a29bfe" stroke-width="1" opacity="0.2"/>
+</svg>
