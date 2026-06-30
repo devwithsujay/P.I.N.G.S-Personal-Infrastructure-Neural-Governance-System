@@ -105,8 +105,8 @@ data flow.
 
 ### 1. Clone and configure
 ```bash
-git clone https://github.com/<your-username>/pings-core.git
-cd pings-core
+git clone https://github.com/devwithsujay/P.I.N.G.S-Personal-Infrastructure-Neural-Governance-System
+cd P.I.N.G.S-Personal-Infrastructure-Neural-Governance-System
 cp .env.example .env
 # Edit .env with your Telegram bot token and (optionally) your NVIDIA API key
 ```
