@@ -15,6 +15,9 @@ client.interceptors.response.use(
 )
 
 export const sendChat = (data) => client.post('/chat', data)
+export const chatUpload = (formData) => client.post('/chat/upload', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+})
 export const uploadDocument = (formData) => client.post('/documents/upload', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }
 })
@@ -58,8 +61,6 @@ export const addKnowledge = (data) => client.post('/knowledge', data)
 export const deleteKnowledge = (id) => client.delete(`/knowledge/${id}`)
 
 export const getPatterns = () => client.get('/patterns')
-export const getSuggestions = () => client.get('/suggestions')
-export const dismissSuggestion = (id) => client.delete(`/suggestions/${id}`)
 
 export const getProactiveStatus = () => client.get('/proactive/status')
 

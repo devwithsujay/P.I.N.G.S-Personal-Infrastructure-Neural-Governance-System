@@ -1,12 +1,12 @@
 import os
 import uuid
 import logging
+import base64
 import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import httpx
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -200,60 +200,65 @@ async def chat_upload(
     file: UploadFile = File(...),
     authorized: bool = Depends(verify_api_key),
 ) -> ChatResponse:
+    global persona_cache
     sid = session_id or str(uuid.uuid4())
     content = await file.read()
     filename = file.filename or ""
 
     image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
     is_image = any(filename.lower().endswith(ext) for ext in image_extensions)
+    is_pdf = filename.lower().endswith(".pdf")
 
-    if is_image and settings.NVIDIA_API_KEY:
-        import base64
+    if is_image:
         image_b64 = base64.b64encode(content).decode("utf-8")
-        vision_prompt = message or "Describe this image in detail."
-
+        ext = filename.rsplit('.', 1)[-1].lower()
+        mime = "jpeg" if ext in ("jpg", "jpeg") else ext
+        extra_parts = [{"type": "file", "mime": f"image/{mime}", "url": f"data:image/{mime};base64,{image_b64}", "filename": filename}]
+        user_log = f"[Image: {filename}] {message}"
+    elif is_pdf:
         try:
-            async with httpx.AsyncClient(timeout=60) as client:
-                resp = await client.post(
-                    f"{settings.NIM_BASE_URL}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {settings.NVIDIA_API_KEY}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": settings.MODEL_VISION,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": [
-                                    {"type": "text", "text": vision_prompt},
-                                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
-                                ],
-                            }
-                        ],
-                        "max_tokens": 1024,
-                    },
-                )
-                resp.raise_for_status()
-                data = resp.json()
-                response_text = data["choices"][0]["message"]["content"]
+            import fitz
+            doc = fitz.open(stream=content, filetype="pdf")
+            text = ""
+            for page in doc:
+                text += page.get_text()
+            page = doc[0]
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            img_bytes = pix.tobytes("png")
+            img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+            doc.close()
+            extra_parts = [{"type": "file", "mime": "image/png", "url": f"data:image/png;base64,{img_b64}", "filename": f"{filename}.png"}]
+            if text.strip():
+                message = f"{message}\n\n--- OCR text from PDF: {filename} ---\n{text[:3000]}"
+            user_log = f"[PDF: {filename}] {message}"
         except Exception as e:
-            logger.error(f"Vision API error: {e}")
-            response_text = f"Vision analysis failed: {e}"
+            logger.error(f"PDF processing failed: {e}")
+            text_content = content.decode("utf-8", errors="replace")
+            message = f"{message}\n\n--- Uploaded PDF (raw): {filename} ---\n{text_content[:5000]}"
+            extra_parts = None
+            user_log = f"[PDF: {filename}] {message}"
     else:
         text_content = content.decode("utf-8", errors="replace")
         combined_message = f"{message}\n\n--- Uploaded file: {filename} ---\n{text_content[:5000]}"
 
-        global persona_cache
         if not persona_cache:
             persona_cache = load_persona()
         system_prompt = build_system_prompt(persona_cache)
-        response_text, _ = await dispatch(combined_message, sid, system_prompt, persona_cache)
+        response_text, intent = await dispatch(combined_message, sid, system_prompt, persona_cache)
+        await save_message(sid, "user", f"[Upload: {filename}] {message}")
+        await save_message(sid, "assistant", response_text, intent=intent)
+        return ChatResponse(reply=response_text, session_id=sid, intent=intent)
 
-    await save_message(sid, "user", f"[Upload: {filename}] {message}")
-    await save_message(sid, "assistant", response_text, intent="vision" if is_image else "upload")
+    if not persona_cache:
+        persona_cache = load_persona()
+    system_prompt = build_system_prompt(persona_cache)
+    prompt_text = message or "Describe this image in detail."
+    response_text, intent = await dispatch(prompt_text, sid, system_prompt, persona_cache, extra_parts=extra_parts)
 
-    return ChatResponse(reply=response_text, session_id=sid, intent="vision" if is_image else "upload")
+    await save_message(sid, "user", user_log)
+    await save_message(sid, "assistant", response_text, intent=intent)
+
+    return ChatResponse(reply=response_text, session_id=sid, intent=intent)
 
 
 @app.post("/upload", response_model=UploadResponse)

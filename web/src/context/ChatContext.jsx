@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
-import { sendChat, getAgents, getModels, getSessionMessages, startResearch, getResearchQueue, listResearchRuns } from '../api'
+import { sendChat, chatUpload, getAgents, getModels, getSessionMessages, startResearch, getResearchQueue, listResearchRuns } from '../api'
 
 const ChatContext = createContext(null)
 
@@ -126,7 +126,7 @@ export function ChatProvider({ children }) {
     return () => window.removeEventListener('new-chat', handler)
   }, [])
 
-  const sendMessage = useCallback(async (text, filePreview = null) => {
+  const sendMessage = useCallback(async (text, file = null) => {
     if (respondingRef.current) return
 
     let messageText = text
@@ -152,17 +152,22 @@ export function ChatProvider({ children }) {
     cancelledRef.current = false
 
     try {
-      const payload = {
-        message: messageText,
-        session_id: sessionId,
-        agent: agentName,
-        model: selectedModel || undefined
+      let res
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('message', messageText)
+        if (sessionId) formData.append('session_id', sessionId)
+        res = await chatUpload(formData)
+      } else {
+        const payload = {
+          message: messageText,
+          session_id: sessionId,
+          agent: agentName,
+          model: selectedModel || undefined
+        }
+        res = await sendChat(payload)
       }
-      if (filePreview) {
-        payload.file = filePreview.name
-      }
-
-      const res = await sendChat(payload)
 
       if (cancelledRef.current) return
 

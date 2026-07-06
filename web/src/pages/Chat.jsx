@@ -204,6 +204,8 @@ export default function Chat() {
     setFilePreview(null)
   }, [input, isResponding, filePreview, sendMessage])
 
+  const clearFilePreview = useCallback(() => setFilePreview(null), [])
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -230,7 +232,7 @@ export default function Chat() {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
-    if (file) setFilePreview({ name: file.name, size: file.size, type: file.type })
+    if (file) setFilePreview(file)
   }
 
   const filteredAgents = agents.filter(a =>
@@ -427,7 +429,7 @@ export default function Chat() {
               size="sm"
               variant="ghost"
               aria-label="Remove file"
-              onPress={() => setFilePreview(null)}
+              onPress={clearFilePreview}
               className="ml-auto text-text-muted hover:text-text-secondary min-w-0 h-auto p-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -454,7 +456,7 @@ export default function Chat() {
             ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
-            accept=".txt,.md,.pdf,.doc,.docx,.csv,.json,.py,.js,.ts,.jsx,.tsx"
+            accept=".txt,.md,.pdf,.doc,.docx,.csv,.json,.py,.js,.ts,.jsx,.tsx,.jpg,.jpeg,.png,.gif,.webp,.bmp"
           />
 
           <textarea

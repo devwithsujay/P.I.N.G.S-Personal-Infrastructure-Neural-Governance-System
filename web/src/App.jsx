@@ -10,7 +10,7 @@ import Calendar from './pages/Calendar'
 import HomeLab from './pages/HomeLab'
 import Skills from './pages/Skills'
 import History from './pages/History'
-import MissionControl from './pages/MissionControl'
+
 import Settings from './pages/Settings'
 
 export default function App() {
@@ -40,7 +40,7 @@ export default function App() {
         '4': '/calendar',
         '5': '/skills',
         '6': '/homelab',
-        '7': '/mission-control',
+
         '8': '/history',
       }
       const key = e.key
@@ -81,7 +81,7 @@ export default function App() {
             <Route path="/homelab" element={<HomeLab />} />
             <Route path="/skills" element={<Skills />} />
             <Route path="/history" element={<History />} />
-            <Route path="/mission-control" element={<MissionControl />} />
+
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>

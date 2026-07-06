@@ -109,11 +109,11 @@ def extract_agent_mention(message: str) -> Tuple[Optional[str], str]:
     return None, message
 
 
-async def dispatch_to_agent(agent_id: str, message: str, session_id: str, persona: Optional[Dict[str, str]] = None, model: Optional[str] = None) -> str:
+async def dispatch_to_agent(agent_id: str, message: str, session_id: str, persona: Optional[Dict[str, str]] = None, model: Optional[str] = None, extra_parts: Optional[List[Dict[str, Any]]] = None) -> str:
     agent_config = AGENT_ROLES.get(agent_id)
     if not agent_config:
         from core.agents.opencode_engine import run_opencode_task
-        return await run_opencode_task(message, "", model=model)
+        return await run_opencode_task(message, "", model=model, extra_parts=extra_parts)
 
     agent_model = model or agent_config["model"]
     role = agent_config["role"]
@@ -132,17 +132,17 @@ async def dispatch_to_agent(agent_id: str, message: str, session_id: str, person
     elif agent_id == "creative":
         from core.agents.opencode_engine import run_opencode_task
         creative_prompt = f"{agent_prompt}\n\nBe creative, imaginative, and expressive. Use vivid language and original ideas."
-        return await run_opencode_task(message, creative_prompt, model=agent_model)
+        return await run_opencode_task(message, creative_prompt, model=agent_model, extra_parts=extra_parts)
     else:
         from core.agents.opencode_engine import run_opencode_task
-        return await run_opencode_task(message, agent_prompt, model=agent_model)
+        return await run_opencode_task(message, agent_prompt, model=agent_model, extra_parts=extra_parts)
 
 
-async def dispatch(message: str, session_id: str, system_prompt: str, persona: Optional[Dict[str, str]] = None, model: Optional[str] = None) -> Tuple[str, str]:
+async def dispatch(message: str, session_id: str, system_prompt: str, persona: Optional[Dict[str, str]] = None, model: Optional[str] = None, extra_parts: Optional[List[Dict[str, Any]]] = None) -> Tuple[str, str]:
     agent_id, clean_message = extract_agent_mention(message)
     if agent_id:
         logger.info(f"Agent mention detected: @{agent_id}, message: {clean_message[:60]}")
-        response = await dispatch_to_agent(agent_id, clean_message, session_id, persona, model=model)
+        response = await dispatch_to_agent(agent_id, clean_message, session_id, persona, model=model, extra_parts=extra_parts)
         return response, f"agent:{agent_id}"
 
     intent = classify_intent(clean_message)
@@ -164,6 +164,6 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
         response = await web_search(query)
     else:
         from core.agents.opencode_engine import run_opencode_task
-        response = await run_opencode_task(clean_message, system_prompt, model=model)
+        response = await run_opencode_task(clean_message, system_prompt, model=model, extra_parts=extra_parts)
 
     return response, intent

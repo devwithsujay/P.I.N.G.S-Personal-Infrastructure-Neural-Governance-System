@@ -32,14 +32,15 @@ async def _send_prompt(
     session_id: str,
     text: str,
     model: Optional[str] = None,
+    extra_parts: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     model = model or settings.DEFAULT_ZEN_MODEL
 
     provider_id, model_id = _parse_model(model)
 
-    body: Dict[str, Any] = {
-        "parts": [{"type": "text", "text": text}],
-    }
+    parts = list(extra_parts) if extra_parts else []
+    parts.append({"type": "text", "text": text})
+    body: Dict[str, Any] = {"parts": parts}
     if provider_id and model_id:
         body["model"] = {"providerID": provider_id, "modelID": model_id}
 
@@ -69,6 +70,7 @@ async def run_opencode_task(
     model: Optional[str] = None,
     tools: Optional[List[str]] = None,
     timeout: int = 120,
+    extra_parts: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     model = model or settings.DEFAULT_ZEN_MODEL
 
@@ -88,7 +90,7 @@ async def run_opencode_task(
         session_id = await _create_session(title=task[:60])
         logger.info(f"Created opencode session: {session_id}")
 
-        result = await _send_prompt(session_id, full_prompt, model=model)
+        result = await _send_prompt(session_id, full_prompt, model=model, extra_parts=extra_parts)
         return result
 
     except httpx.TimeoutException:
