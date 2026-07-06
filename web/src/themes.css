@@ -46,22 +46,6 @@
   /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Cormorant Garamond', 'Georgia', serif;
-
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
-  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── Mistral AI (orange sunset) ──────────────────────────────────────── */
@@ -104,22 +88,6 @@
   /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'EB Garamond', 'Times New Roman', Georgia, serif;
-
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
-  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── Cohere (editorial blue on white) ─────────────────────────────────── */
@@ -162,22 +130,6 @@
   /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
-
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
-  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── Replicate (cream + hot orange) ──────────────────────────────────── */
@@ -220,22 +172,6 @@
   /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
-
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
-  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── OpenCode (terminal monospace) ──────────────────────────────────── */
@@ -278,22 +214,6 @@
   /* Typography — everything is monospaced */
   --font-ui: 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', monospace;
   --font-display: 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', monospace;
-
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
-  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── Voltagent (dark canvas + electric green) ──────────────────────────── */
@@ -337,21 +257,8 @@
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* ── HeroUI variable overrides ── */
-  --background:     var(--bg-base);
-  --foreground:     var(--text-primary);
-  --surface:        var(--bg-elevated);
-  --surface-foreground: var(--text-primary);
-  --muted:          var(--text-muted);
-  --default:        var(--bg-surface);
-  --default-foreground: var(--text-primary);
-  --accent-foreground: var(--accent-text);
+  /* voltagent uses slightly softer accent glow */
   --accent-soft:    color-mix(in srgb, var(--accent) 12%, transparent);
-  --accent-soft-foreground: var(--text-secondary);
-  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
-  --field-background: var(--bg-elevated);
-  --field-foreground: var(--text-primary);
-  --field-placeholder: var(--text-muted);
 }
 
 /* ─── Root variables (fallback + global) ───────────────────────────────── */
@@ -368,4 +275,20 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
+
+  /* ── HeroUI variable overrides (shared by all themes) ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
 }

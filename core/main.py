@@ -28,7 +28,6 @@ from core.memory.db import (
     update_research_run, get_research_runs, get_research_run,
     delete_research_run,
     create_calendar_task, get_calendar_tasks, update_calendar_task, delete_calendar_task,
-    get_db,
 )
 from core.memory.persistent import add_knowledge, search_knowledge, get_memory_stats
 from core.memory.seed import seed_chroma_on_startup
@@ -585,8 +584,7 @@ async def list_agent_runs(limit: int = Query(20)) -> List[Dict[str, Any]]:
 
 @app.get("/agent-runs/last")
 async def last_agent_runs() -> List[Dict[str, Any]]:
-    db = await get_db()
-    try:
+    async with get_db_ctx() as db:
         cursor = await db.execute(
             """SELECT ar.*, a.name as agent_name FROM agent_runs ar
             LEFT JOIN agents a ON ar.agent_id = a.id
@@ -595,8 +593,6 @@ async def last_agent_runs() -> List[Dict[str, Any]]:
         )
         rows = await cursor.fetchall()
         return [dict(r) for r in rows]
-    finally:
-        await db.close()
 
 
 @app.get("/research/queue")
