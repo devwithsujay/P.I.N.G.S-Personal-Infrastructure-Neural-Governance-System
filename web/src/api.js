@@ -62,8 +62,6 @@ export const deleteKnowledge = (id) => client.delete(`/knowledge/${id}`)
 
 export const getPatterns = () => client.get('/patterns')
 
-export const getProactiveStatus = () => client.get('/proactive/status')
-
 export const getJournalFeed = () => client.get('/persona/journal')
 export const searchMemory = (query) => client.get('/memory/search', { params: { q: query } })
 

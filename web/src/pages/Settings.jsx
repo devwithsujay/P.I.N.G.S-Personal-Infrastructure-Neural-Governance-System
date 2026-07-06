@@ -217,15 +217,6 @@ export default function Settings() {
                   <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={settings?.proactive_enabled ?? true}
-                      onChange={e => updateSettingsField('proactive_enabled', e.target.checked)}
-                      className="w-4 h-4 rounded bg-bg-surface border-text-muted text-accent focus:ring-accent"
-                    />
-                    Proactive Intelligence
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
                       checked={settings?.memory_enabled ?? true}
                       onChange={e => updateSettingsField('memory_enabled', e.target.checked)}
                       className="w-4 h-4 rounded bg-bg-surface border-text-muted text-accent focus:ring-accent"

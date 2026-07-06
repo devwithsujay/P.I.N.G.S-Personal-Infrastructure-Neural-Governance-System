@@ -32,8 +32,7 @@ from core.memory.db import (
 from core.memory.persistent import add_knowledge, search_knowledge, get_memory_stats
 from core.memory.seed import seed_chroma_on_startup
 from core.persona.loader import load_persona, build_system_prompt, watch_persona_files
-from core.proactive.scheduler import start_scheduler, stop_scheduler, get_job_status
-from core.proactive.notifier import append_journal
+
 from core.agents.router import dispatch, classify_intent
 from core.agents.opencode_engine import run_opencode_task
 from core.tools.ssh import test_ssh_connection, run_ssh_command, get_ssh_config_from_db
@@ -117,16 +116,11 @@ async def startup_event() -> None:
     watch_persona_files(_reload_persona)
     logger.info("Persona file watcher started")
 
-    start_scheduler()
-    logger.info("Scheduler started")
 
-    await append_journal("[SYSTEM] P.I.N.G.S Core v2 started")
 
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
-    stop_scheduler()
-    await append_journal("[SYSTEM] P.I.N.G.S Core v2 stopped")
     logger.info("P.I.N.G.S Core v2 stopped")
 
 
@@ -163,7 +157,6 @@ async def health_check() -> HealthResponse:
         services["chroma"] = chroma_health.get("status", "unknown")
     except Exception:
         services["chroma"] = "unavailable"
-    services["scheduler"] = "running" if get_job_status().get("running") else "stopped"
     return HealthResponse(status="ok", services=services)
 
 
@@ -751,11 +744,6 @@ async def get_journal() -> Dict[str, str]:
         content = journal_path.read_text(encoding="utf-8")
         return {"journal": content}
     return {"journal": ""}
-
-
-@app.get("/proactive/status")
-async def proactive_status() -> Dict[str, Any]:
-    return get_job_status()
 
 
 @app.post("/persona/reload")
