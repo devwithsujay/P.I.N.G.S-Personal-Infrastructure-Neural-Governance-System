@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from '@heroui/react'
 
 const ICONS = {
   tasks: (
@@ -71,13 +72,15 @@ export default function EmptyState({ icon = 'folder', title, description, action
       {suggestions.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2 justify-center max-w-md">
           {suggestions.map((sug, i) => (
-            <button
+            <Button
               key={i}
-              onClick={sug.onClick}
-              className="px-3 py-1.5 rounded-full text-xs text-text-secondary glass hover:border-glow hover:text-accent-light transition-all duration-200"
+              size="sm"
+              variant="outline"
+              onPress={sug.onClick}
+              className="text-xs text-text-secondary glass"
             >
               {sug.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}

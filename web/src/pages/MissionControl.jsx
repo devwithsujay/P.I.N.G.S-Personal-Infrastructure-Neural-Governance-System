@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { getAgents, getAgentRuns, getLastRunPerAgent, getJournalFeed, getMemory, getProactiveStatus, getSuggestions, dismissSuggestion } from '../api'
+import { Button, Spinner } from '@heroui/react'
 
 const EVENT_ICONS = {
   chat: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
@@ -290,15 +291,17 @@ export default function MissionControl() {
                   </div>
                   <div className="flex gap-1">
                     {LOG_FILTERS.slice(0, 4).map(f => (
-                      <button
+                      <Button
                         key={f}
-                        onClick={() => setLogFilter(f)}
+                        onPress={() => setLogFilter(f)}
+                        variant="ghost"
+                        size="sm"
                         className={`px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200 ${
                           logFilter === f ? 'status-pill status-pill-online' : 'text-text-muted hover:text-text-secondary'
                         }`}
                       >
                         {f}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -373,11 +376,11 @@ export default function MissionControl() {
                       placeholder="Search..."
                       className="input-field flex-1 text-xs"
                     />
-                    <button onClick={handleMemorySearch} className="btn-accent !px-3 !py-2">
+                    <Button isIconOnly variant="light" onPress={handleMemorySearch} aria-label="Search memory" className="btn-accent !px-3 !py-2">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
 
                   {memoryResults && (
@@ -409,11 +412,11 @@ export default function MissionControl() {
                           <div className="flex-1">
                             <p className="text-xs text-text-secondary">{sug.text || sug.content || sug.message}</p>
                           </div>
-                          <button onClick={() => handleDismissSuggestion(sug.id)} className="text-text-muted hover:text-text-secondary transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-bg-surface" aria-label="Dismiss suggestion">
+                          <Button isIconOnly variant="light" onPress={() => handleDismissSuggestion(sug.id)} aria-label="Dismiss suggestion" className="text-text-muted hover:text-text-secondary transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-bg-surface">
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       ))}
                     </div>

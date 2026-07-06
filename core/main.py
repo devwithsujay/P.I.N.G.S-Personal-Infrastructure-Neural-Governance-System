@@ -18,7 +18,7 @@ from core.schemas import (
     HealthResponse, ChatRequest, ChatResponse, HistoryEntry, SessionInfo,
     HomelabStatus, ContainerInfo, TaskCreate, TaskUpdate, TaskOut,
     UploadResponse, ExportRequest, SettingsUpdate, AgentCreate, AgentUpdate,
-    AgentOut, ResearchRequest, ChatUploadRequest, ModelsResponse, ModelInfo,
+    AgentOut, ModelsResponse, ModelInfo,
 )
 from core.memory.db import (
     init_db, save_message, get_session_messages, get_all_sessions, delete_session, delete_all_sessions,
@@ -36,7 +36,6 @@ from core.persona.loader import load_persona, build_system_prompt, watch_persona
 from core.proactive.scheduler import start_scheduler, stop_scheduler, get_job_status
 from core.proactive.notifier import append_journal
 from core.agents.router import dispatch, classify_intent
-from core.agents.research import run_research
 from core.agents.opencode_engine import run_opencode_task
 from core.tools.ssh import test_ssh_connection, run_ssh_command, get_ssh_config_from_db
 from core.tools.system import list_containers, control_container, get_container_stats
@@ -598,17 +597,6 @@ async def last_agent_runs() -> List[Dict[str, Any]]:
         return [dict(r) for r in rows]
     finally:
         await db.close()
-
-
-@app.post("/research/start")
-async def start_research(request: ResearchRequest) -> Dict[str, Any]:
-    result = await run_research(request.topic, request.mode, request.max_sources)
-    return {
-        "run_id": result.get("run_id"),
-        "status": "completed",
-        "report": result.get("report", ""),
-        "report_html": result.get("report_html", ""),
-    }
 
 
 @app.get("/research/queue")

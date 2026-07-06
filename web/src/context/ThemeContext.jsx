@@ -3,14 +3,15 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 const ThemeContext = createContext(null)
 
 const THEME_KEY = 'pings-theme'
-const DEFAULT_THEME = 'deep-space'
+const DEFAULT_THEME = 'claude'
 
 const THEMES = {
-  'deep-space':   { name: 'Deep Space',   accent: '#3b82f6' },
-  'terminal':     { name: 'Terminal',      accent: '#22c55e' },
-  'cyberpunk':    { name: 'Cyberpunk',     accent: '#8b5cf6' },
-  'warm-dark':    { name: 'Warm Dark',     accent: '#f59e0b' },
-  'slate-indigo': { name: 'Slate Indigo',  accent: '#6366f1' },
+  'claude': { name: 'Claude Editorial', accent: '#cc785c' },
+  'mistral': { name: 'Mistral AI', accent: '#fa520f' },
+  'cohere': { name: 'Cohere', accent: '#1863dc' },
+  'replicate': { name: 'Replicate', accent: '#ea2804' },
+  'opencode': { name: 'OpenCode', accent: '#201d1d' },
+  'voltagent': { name: 'Voltagent', accent: '#00d992' },
 }
 
 function hexToRgb(hex) {
@@ -24,19 +25,15 @@ function applyThemeVars(themeId) {
   const root = document.documentElement
   root.setAttribute('data-theme', themeId)
 
-  // Apply --font-ui to body for terminal theme monospace override
   const fontUi = getComputedStyle(root).getPropertyValue('--font-ui').trim()
   if (fontUi) {
     document.body.style.fontFamily = fontUi
   }
 
-  // Derive --accent-rgb from --accent for legacy compatibility
   const accent = getComputedStyle(root).getPropertyValue('--accent').trim()
   if (accent && accent.startsWith('#')) {
     const { r, g, b } = hexToRgb(accent)
     root.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`)
-
-    // Derive legacy accent variants
     root.style.setProperty('--accent-light', `color-mix(in srgb, ${accent} 70%, white)`)
     root.style.setProperty('--accent-dark', accent)
     root.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.35)`)
@@ -53,7 +50,6 @@ export function ThemeProvider({ children }) {
     }
   })
 
-  // Apply theme on mount (synchronous — no flash)
   useEffect(() => {
     applyThemeVars(theme)
   }, [])

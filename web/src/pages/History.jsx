@@ -4,6 +4,7 @@ import { getSessions, getSessionMessages, clearHistory } from '../api'
 import { useToast } from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EmptyState from '../components/EmptyState'
+import { Button, Spinner } from '@heroui/react'
 
 export default function History() {
   const [sessions, setSessions] = useState([])
@@ -82,12 +83,12 @@ export default function History() {
           <span className="text-xs text-text-muted">({sessions.length})</span>
         </div>
         {sessions.length > 0 && (
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            className="px-3 py-1.5 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+          <Button
+            onPress={() => setShowClearConfirm(true)}
+            className="px-3 py-1.5 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors bg-transparent"
           >
             Clear All
-          </button>
+          </Button>
         )}
       </div>
 
@@ -110,10 +111,10 @@ export default function History() {
           <div className="space-y-2 max-w-3xl mx-auto">
             {filteredSessions.map(session => (
               <div key={session.session_id} className="card rounded-lg overflow-hidden slide-up">
-                <button
-                  onClick={() => toggleSession(session.session_id)}
+                <Button
+                  onPress={() => toggleSession(session.session_id)}
                   aria-label={`Toggle session ${session.title || session.session_id}`}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-bg-surface/30 transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-bg-surface/30 transition-colors bg-transparent"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-text-primary truncate">
@@ -127,7 +128,7 @@ export default function History() {
                   <svg className={`w-4 h-4 text-text-muted transition-transform flex-shrink-0 ml-2 ${expandedId === session.session_id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                </button>
+                </Button>
 
                 {expandedId === session.session_id && (
                   <div className="border-t p-4 max-h-96 overflow-y-auto fade-in" style={{ borderColor: 'var(--border-subtle)' }}>

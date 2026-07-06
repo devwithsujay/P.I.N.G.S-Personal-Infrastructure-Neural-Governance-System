@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { getScheduledTasks, createScheduledTask, updateScheduledTask, deleteScheduledTask } from '../api'
 import { useToast } from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { Button } from '@heroui/react'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -93,16 +94,16 @@ export default function Calendar() {
             <span className="font-brand text-sm font-medium text-text-primary">Calendar</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={prevMonth} className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-primary transition-all" aria-label="Previous month">
+            <Button isIconOnly aria-label="Previous month" variant="light" onPress={prevMonth} className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-primary transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
+            </Button>
             <span className="text-sm font-medium text-text-primary w-36 text-center">{MONTHS[viewMonth]} {viewYear}</span>
-            <button onClick={nextMonth} className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-primary transition-all" aria-label="Next month">
+            <Button isIconOnly aria-label="Next month" variant="light" onPress={nextMonth} className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-primary transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-            <button onClick={() => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); setSelectedDate(todayStr); }} className="ml-2 px-2.5 py-1 rounded-xl text-xs text-accent hover:bg-accent/10 transition-all">
+            </Button>
+            <Button variant="light" onPress={() => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); setSelectedDate(todayStr); }} className="ml-2 px-2.5 py-1 rounded-xl text-xs text-accent hover:bg-accent/10 transition-all">
               Today
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -126,9 +127,9 @@ export default function Calendar() {
                     style={cell.isToday ? { background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' } : {}}>
                     {cell.day}
                   </span>
-                  <button onClick={(e) => { e.stopPropagation(); openAddForDate(cell.dateStr) }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded-lg hover:bg-accent/20 text-text-muted hover:text-accent transition-all" aria-label="Add task">
+                   <Button isIconOnly aria-label="Add task" variant="light" onPress={(e) => { e.stopPropagation(); openAddForDate(cell.dateStr) }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded-lg hover:bg-accent/20 text-text-muted hover:text-accent transition-all">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  </button>
+                  </Button>
                 </div>
                 {cell.tasks.length > 0 && (
                   <div className="px-1 pb-1 space-y-0.5">
@@ -154,9 +155,9 @@ export default function Calendar() {
               <div className="text-sm font-medium text-text-primary">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
               <div className="text-xs text-text-muted">{selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}</div>
             </div>
-            <button onClick={() => openAddForDate(selectedDate)} className="p-1.5 rounded-xl hover:bg-accent/15 text-accent transition-all" aria-label="Add task">
+            <Button isIconOnly aria-label="Add task" variant="light" onPress={() => openAddForDate(selectedDate)} className="p-1.5 rounded-xl hover:bg-accent/15 text-accent transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            </button>
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -177,10 +178,10 @@ export default function Calendar() {
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <button onClick={resetForm} className="btn-ghost !text-xs">Cancel</button>
-                  <button onClick={handleSubmit} disabled={!form.title.trim() || loading} className="btn-primary !text-xs !px-3 !py-1" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
+                  <Button variant="light" onPress={resetForm} className="btn-ghost !text-xs">Cancel</Button>
+                  <Button variant="light" onPress={handleSubmit} isDisabled={!form.title.trim() || loading} className="btn-primary !text-xs !px-3 !py-1" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
                     {editingTask ? 'Update' : 'Add'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -188,9 +189,9 @@ export default function Calendar() {
             {selectedTasks.length === 0 && !showForm && (
               <div className="text-center py-10">
                 <div className="text-text-muted text-sm mb-3">No tasks for this day</div>
-                <button onClick={() => openAddForDate(selectedDate)} className="btn-primary !text-xs">
+                <Button variant="light" onPress={() => openAddForDate(selectedDate)} className="btn-primary !text-xs">
                   + Add Task
-                </button>
+                </Button>
               </div>
             )}
 
@@ -209,12 +210,12 @@ export default function Calendar() {
                     </div>
                   </div>
                   <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                    <button onClick={() => startEdit(task)} aria-label="Edit task" className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-all">
+                    <Button isIconOnly aria-label="Edit task" variant="light" onPress={() => startEdit(task)} className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-all">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                    </button>
-                    <button onClick={() => setDeleteTaskId(task.id)} aria-label="Delete task" className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-red-400 transition-all">
+                    </Button>
+                    <Button isIconOnly aria-label="Delete task" variant="light" onPress={() => setDeleteTaskId(task.id)} className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-red-400 transition-all">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

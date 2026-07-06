@@ -159,7 +159,7 @@ export default function BootSequence({ onComplete }) {
         className="boot-container"
         style={{
           ...styles.overlay,
-          background: 'var(--bg-base, #07070a)',
+          background: '#07070a',
           backgroundImage: `
             radial-gradient(ellipse 90% 60% at 15% 15%, rgba(var(--accent-rgb),0.08) 0%, transparent 65%),
             radial-gradient(ellipse 50% 50% at 85% 5%,  rgba(var(--accent-rgb),0.05) 0%, transparent 55%),

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { Button } from '@heroui/react'
 
 const ToastContext = createContext(null)
 
@@ -114,14 +115,18 @@ function ToastItem({ toast, onRemove }) {
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex-shrink-0" style={{ color: BORDER_COLORS[toast.type] }}>{ICONS[toast.type]}</span>
           <span className="text-sm text-text-primary flex-1">{toast.message}</span>
-          <button
-            onClick={() => onRemove(toast.id)}
-            className="text-text-muted hover:text-text-primary transition-colors flex-shrink-0 mt-0.5"
+          <Button
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            aria-label="Dismiss"
+            onPress={() => onRemove(toast.id)}
+            className="flex-shrink-0 mt-0.5 min-w-0 h-auto p-0.5 text-text-muted hover:text-text-primary"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
       <div className="h-0.5 w-full" style={{ position: 'absolute', bottom: 0, left: 0 }}>

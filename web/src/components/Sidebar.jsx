@@ -1,5 +1,6 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { Button } from '@heroui/react'
 import SidebarBrand from './SidebarBrand'
 import { useChat } from '../context/ChatContext'
 import { useTheme } from '../context/ThemeContext'
@@ -58,11 +59,12 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
     <aside className={`sidebar-desktop fixed left-0 top-0 h-full z-40 flex flex-col transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-64'}`} style={{ background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}>
       <SidebarBrand collapsed={collapsed} />
 
-      <div className="px-3 mb-2">
-        <button
-          onClick={handleNewChat}
+      <div className="px-3 mt-8 mb-3">
+        <Button
+          fullWidth
           aria-label="New Chat"
-          className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${collapsed ? 'px-2' : ''}`}
+          onPress={handleNewChat}
+          className="rounded-xl text-sm font-medium"
           style={{
             color: 'var(--accent-text)',
             background: 'var(--accent)',
@@ -72,7 +74,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           {!collapsed && <span>New Chat</span>}
-        </button>
+        </Button>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 space-y-0.5" aria-label="Main navigation">
@@ -130,14 +132,16 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
           <SettingsIcon className="w-[18px] h-[18px] flex-shrink-0" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
-        <button
-          onClick={onToggleCollapse}
+        <Button
+          variant="ghost"
+          fullWidth
+          onPress={onToggleCollapse}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="sidebar-link w-full text-left"
+          className="sidebar-link justify-start"
         >
           <CollapseIcon className={`w-[18px] h-[18px] flex-shrink-0 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           {!collapsed && <span>Collapse</span>}
-        </button>
+        </Button>
       </div>
     </aside>
   )

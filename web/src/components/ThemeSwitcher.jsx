@@ -2,11 +2,12 @@ import React from 'react'
 import { useTheme, THEMES } from '../context/ThemeContext'
 
 const THEME_META = {
-  'deep-space':   { bg: '#0a0a0f', surface: '#0d0d14', accent: '#3b82f6', desc: 'Cool blue on deep dark' },
-  'terminal':     { bg: '#050d05', surface: '#080d08', accent: '#22c55e', desc: 'Green phosphor CRT' },
-  'cyberpunk':    { bg: '#0a0514', surface: '#0d0818', accent: '#8b5cf6', desc: 'Purple neon nightlife' },
-  'warm-dark':    { bg: '#0f0a05', surface: '#130d08', accent: '#f59e0b', desc: 'Warm amber glow' },
-  'slate-indigo': { bg: '#0a0c14', surface: '#0d0f18', accent: '#6366f1', desc: 'Indigo twilight' },
+  'claude': { bg: '#faf9f5', surface: '#efe9de', accent: '#cc785c', text: '#141413', textSecondary: '#3d3d3a', desc: 'Warm cream, coral accent' },
+  'mistral': { bg: '#ffffff', surface: '#fff8e0', accent: '#fa520f', text: '#1f1f1f', textSecondary: '#4a4a4a', desc: 'White canvas, orange sunset' },
+  'cohere': { bg: '#ffffff', surface: '#eeece7', accent: '#1863dc', text: '#212121', textSecondary: '#75758a', desc: 'White canvas, blue accent' },
+  'replicate': { bg: '#f9f7f3', surface: '#ffffff', accent: '#ea2804', text: '#202020', textSecondary: '#3a3a3a', desc: 'Warm cream, hot orange' },
+  'opencode': { bg: '#fdfcfc', surface: '#f1eeee', accent: '#201d1d', text: '#201d1d', textSecondary: '#424245', desc: 'Blush cream, monospace' },
+  'voltagent': { bg: '#101010', surface: '#1a1a1a', accent: '#00d992', text: '#f2f2f2', textSecondary: '#bdbdbd', desc: 'Dark canvas, green accent' },
 }
 
 export default function ThemeSwitcher() {
@@ -27,13 +28,10 @@ export default function ThemeSwitcher() {
             }`}
             style={{
               background: t.bg,
-              borderColor: isActive ? t.accent : 'transparent',
               border: `1px solid ${isActive ? t.accent : 'var(--border-subtle)'}`,
-              ringColor: isActive ? t.accent : 'transparent',
               boxShadow: isActive ? `0 0 20px ${t.accent}33` : 'none',
             }}
           >
-            {/* 3-swatch preview */}
             <div className="flex gap-1.5 flex-shrink-0">
               <div className="w-5 h-5 rounded-full" style={{ background: t.bg, border: '1px solid var(--border-subtle)' }} />
               <div className="w-5 h-5 rounded-full" style={{ background: t.accent }} />
@@ -41,10 +39,10 @@ export default function ThemeSwitcher() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium" style={{ color: isActive ? t.accent : '#e2e2f0' }}>
+              <div className="text-sm font-medium" style={{ color: isActive ? t.accent : t.text }}>
                 {meta.name}
               </div>
-              <div className="text-[11px]" style={{ color: isActive ? t.accent : '#6b6b80' }}>
+              <div className="text-[11px]" style={{ color: isActive ? t.accent : t.textSecondary }}>
                 {t.desc}
               </div>
             </div>

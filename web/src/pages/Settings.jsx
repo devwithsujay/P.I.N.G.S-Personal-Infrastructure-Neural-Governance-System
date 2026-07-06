@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { Button, Spinner } from '@heroui/react'
 import { getSettings, saveSettings, getAgents, createAgent, updateAgent, deleteAgent, getPersonality, savePersonality, getModels, testModels } from '../api'
 import { useToast } from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -114,7 +115,7 @@ export default function Settings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <span className="w-6 h-6 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+        <Spinner size="sm" />
       </div>
     )
   }
@@ -133,15 +134,16 @@ export default function Settings() {
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {['general', 'theme', 'agents', 'personality', 'models'].map(tab => (
-              <button
+              <Button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                variant="light"
+                onPress={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all capitalize ${
                   activeTab === tab ? 'btn-primary' : 'bg-bg-surface text-text-muted hover:text-text-secondary'
                 }`}
               >
                 {tab}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -231,13 +233,14 @@ export default function Settings() {
                     Memory System
                   </label>
                 </div>
-                <button
-                  onClick={handleSaveSettings}
-                  disabled={saving}
+                <Button
+                  variant="light"
+                  onPress={handleSaveSettings}
+                  isDisabled={saving}
                   className="btn-primary px-4 py-2 rounded-lg disabled:opacity-30 text-sm font-medium transition-colors"
                 >
                   {saving ? 'Saving...' : 'Save Settings'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -246,15 +249,16 @@ export default function Settings() {
             <div className="space-y-4 slide-up">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-text-primary">Agents</h3>
-                <button
-                  onClick={() => { setAgentForm({ name: '', description: '', system_prompt: '' }); setEditingAgentId(null); setShowAgentForm(!showAgentForm) }}
+                <Button
+                  variant="light"
+                  onPress={() => { setAgentForm({ name: '', description: '', system_prompt: '' }); setEditingAgentId(null); setShowAgentForm(!showAgentForm) }}
                   className="btn-primary flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   New Agent
-                </button>
+                </Button>
               </div>
 
               {showAgentForm && (
@@ -283,14 +287,15 @@ export default function Settings() {
                       className="w-full input-field px-3 py-3 text-sm text-text-primary placeholder-text-muted resize-none"
                     />
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => setShowAgentForm(false)} className="px-3 py-1.5 text-xs text-text-muted hover:text-text-secondary btn-ghost">Cancel</button>
-                      <button
-                        onClick={handleCreateAgent}
-                        disabled={!agentForm.name.trim()}
+                      <Button variant="light" onPress={() => setShowAgentForm(false)} className="px-3 py-1.5 text-xs text-text-muted hover:text-text-secondary btn-ghost">Cancel</Button>
+                      <Button
+                        variant="light"
+                        onPress={handleCreateAgent}
+                        isDisabled={!agentForm.name.trim()}
                         className="btn-primary px-4 py-1.5 rounded-lg disabled:opacity-30 text-xs font-medium transition-colors"
                       >
                         {editingAgentId ? 'Update' : 'Create'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -311,16 +316,16 @@ export default function Settings() {
                           )}
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => startEditAgent(agent)} aria-label="Edit agent" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-text-secondary">
+                          <Button isIconOnly aria-label="Edit agent" variant="light" onPress={() => startEditAgent(agent)} className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-text-secondary">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </button>
-                          <button onClick={() => setDeleteAgentId(agent.id)} aria-label="Delete agent" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-red-400">
+                          </Button>
+                          <Button isIconOnly aria-label="Delete agent" variant="light" onPress={() => setDeleteAgentId(agent.id)} className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-red-400">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -340,13 +345,14 @@ export default function Settings() {
                 rows={10}
                 className="w-full input-field px-4 py-3 text-sm text-text-primary placeholder-text-muted resize-none mb-3"
               />
-              <button
-                onClick={handleSavePersonality}
-                disabled={saving}
+              <Button
+                variant="light"
+                onPress={handleSavePersonality}
+                isDisabled={saving}
                 className="btn-primary px-4 py-2 rounded-lg disabled:opacity-30 text-sm font-medium transition-colors"
               >
                 {saving ? 'Saving...' : 'Save Personality'}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -355,20 +361,21 @@ export default function Settings() {
               <div className="card rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-medium text-text-primary">Model Discovery</h3>
-                  <button
-                    onClick={handleTestModels}
-                    disabled={testing}
+                  <Button
+                    variant="light"
+                    onPress={handleTestModels}
+                    isDisabled={testing}
                     className="btn-primary px-4 py-2 rounded-lg disabled:opacity-30 text-xs font-medium transition-colors flex items-center gap-2"
                   >
                     {testing ? (
-                      <span className="w-3 h-3 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+                      <Spinner size="sm" />
                     ) : (
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     )}
                     Test Models
-                  </button>
+                  </Button>
                 </div>
 
                 {testResult && (

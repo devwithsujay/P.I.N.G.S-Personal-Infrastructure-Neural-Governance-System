@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import { getSkills, getSkill, createSkill, updateSkill, deleteSkill } from '../api'
 import { useToast } from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { Button, Spinner } from '@heroui/react'
 
 export default function Skills() {
   const [skills, setSkills] = useState([])
@@ -84,15 +85,14 @@ export default function Skills() {
           </svg>
           <span className="font-brand text-sm font-medium text-text-primary">Skills</span>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(!showForm) }}
+        <Button
+          variant="light"
+          onPress={() => { resetForm(); setShowForm(!showForm) }}
           className="btn-primary flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          startContent={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
           New Skill
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -101,9 +101,9 @@ export default function Skills() {
             <div className="card rounded-xl p-5 slide-up">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-text-primary">{editingId ? 'Edit Skill' : 'New Skill'}</h3>
-                <button
-                  onClick={() => setPreview(!preview)}
-                  className="text-xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1"
+                <Button
+                  onPress={() => setPreview(!preview)}
+                  className="text-xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1 bg-transparent"
                 >
                   {preview ? (
                     <>
@@ -121,7 +121,7 @@ export default function Skills() {
                       Preview
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3">
@@ -155,14 +155,15 @@ export default function Skills() {
               </div>
 
               <div className="flex justify-end gap-2 mt-3">
-                <button onClick={resetForm} className="px-3 py-1.5 rounded-lg text-xs text-text-muted hover:text-text-secondary btn-ghost transition-colors">Cancel</button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!form.name.trim() || loading}
+                <Button variant="light" onPress={resetForm} className="px-3 py-1.5 rounded-lg text-xs text-text-muted hover:text-text-secondary btn-ghost transition-colors bg-transparent">Cancel</Button>
+                <Button
+                  variant="light"
+                  onPress={handleSubmit}
+                  isDisabled={!form.name.trim() || loading}
                   className="btn-primary px-4 py-1.5 rounded-lg disabled:opacity-30 text-xs font-medium transition-colors"
                 >
                   {editingId ? 'Update' : 'Create'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -188,16 +189,16 @@ export default function Skills() {
                       )}
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                      <button onClick={() => startEdit(skill)} aria-label="Edit skill" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-colors">
+                      <Button isIconOnly variant="light" onPress={() => startEdit(skill)} aria-label="Edit skill" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                      </button>
-                      <button onClick={() => setDeleteId(skill.id)} aria-label="Delete skill" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-red-400 transition-colors">
+                      </Button>
+                      <Button isIconOnly variant="light" onPress={() => setDeleteId(skill.id)} aria-label="Delete skill" className="p-1.5 rounded hover:bg-bg-surface text-text-muted hover:text-red-400 transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

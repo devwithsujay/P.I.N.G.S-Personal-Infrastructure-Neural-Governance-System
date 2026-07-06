@@ -1,190 +1,371 @@
 /* ─── Theme Definitions ─────────────────────────────────────────────────── */
 /* All themes define the SAME set of CSS variables. */
 /* Components only reference variables, never hardcoded colors. */
+/*
+ * Each theme also overrides HeroUI's CSS variables so HeroUI components
+ * (Button, Spinner, Modal, etc.) adapt to the selected theme.
+ */
 
-/* ─── Deep Space (default) ─────────────────────────────────────────────── */
-[data-theme="deep-space"] {
-  --bg-base:        #0a0a0f;
-  --bg-surface:     #0d0d14;
-  --bg-elevated:    #13131e;
-  --bg-code:        #0a0f1a;
+/* ─── Claude Editorial (default) ───────────────────────────────────────── */
+[data-theme="claude"] {
+  /* Surfaces — warm cream editorial palette */
+  --bg-base:        #faf9f5;
+  --bg-surface:     #f5f0e8;
+  --bg-elevated:    #efe9de;
+  --bg-code:        #1f1e1b;
 
-  --border:         #1e1e2e;
-  --border-subtle:  #16162a;
+  /* Borders — soft hairline */
+  --border:         #e6dfd8;
+  --border-subtle:  #ebe6df;
 
-  --accent:         #3b82f6;
-  --accent-dim:     #1a2a4a;
+  /* Accent — coral (the signature Anthropic voltage) */
+  --accent:         #cc785c;
+  --accent-dim:     #a9583e;
   --accent-text:    #ffffff;
 
-  --text-primary:   #e2e2f0;
-  --text-secondary: #6b6b80;
-  --text-muted:     #3b4055;
-  --text-code:      #93c5fd;
+  /* Text — warm dark ink */
+  --text-primary:   #141413;
+  --text-secondary: #3d3d3a;
+  --text-muted:     #6c6a64;
+  --text-code:      #a09d96;
 
-  --status-success:     #22c55e;
-  --status-success-bg:  #0d2010;
-  --status-warning:     #f59e0b;
-  --status-warning-bg:  #1a1a0a;
-  --status-error:       #ef4444;
-  --status-error-bg:    #2a1010;
-  --status-info:        #3b82f6;
-  --status-info-bg:     #1a2a4a;
+  /* Status */
+  --status-success:     #5db872;
+  --status-success-bg:  #eaf7ed;
+  --status-warning:     #d4a017;
+  --status-warning-bg:  #fcf3e0;
+  --status-error:       #c64545;
+  --status-error-bg:    #f9e8e8;
+  --status-info:        #5db8a6;
+  --status-info-bg:     #e8f4f1;
 
-  --bubble-user:    #1a2a4a;
-  --bubble-agent:   #0d0d14;
+  /* Chat bubbles */
+  --bubble-user:    #f5ede8;
+  --bubble-agent:   #efe9de;
 
+  /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
 }
 
-/* ─── Terminal ─────────────────────────────────────────────────────────── */
-[data-theme="terminal"] {
-  --bg-base:        #050d05;
-  --bg-surface:     #080d08;
-  --bg-elevated:    #0d150d;
-  --bg-code:        #020802;
+/* ─── Mistral AI (orange sunset) ──────────────────────────────────────── */
+[data-theme="mistral"] {
+  /* Surfaces — white canvas + cream elevated */
+  --bg-base:        #ffffff;
+  --bg-surface:     #fafafa;
+  --bg-elevated:    #fff8e0;
+  --bg-code:        #1c1c1e;
 
-  --border:         #0f1f0f;
-  --border-subtle:  #0a180a;
+  /* Borders — soft hairline */
+  --border:         #e5e5e5;
+  --border-subtle:  #ededed;
 
-  --accent:         #22c55e;
-  --accent-dim:     #0d2010;
-  --accent-text:    #050d05;
-
-  --text-primary:   #d4f0d4;
-  --text-secondary: #4a7a4a;
-  --text-muted:     #1a3a1a;
-  --text-code:      #86efac;
-
-  --status-success:     #22c55e;
-  --status-success-bg:  #0d2010;
-  --status-warning:     #eab308;
-  --status-warning-bg:  #1a1500;
-  --status-error:       #ef4444;
-  --status-error-bg:    #2a1010;
-  --status-info:        #22c55e;
-  --status-info-bg:     #0d2010;
-
-  --bubble-user:    #0d2010;
-  --bubble-agent:   #080d08;
-
-  --font-ui: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-/* ─── Cyberpunk ────────────────────────────────────────────────────────── */
-[data-theme="cyberpunk"] {
-  --bg-base:        #0a0514;
-  --bg-surface:     #0d0818;
-  --bg-elevated:    #130d20;
-  --bg-code:        #08030f;
-
-  --border:         #1e0f2e;
-  --border-subtle:  #160a22;
-
-  --accent:         #8b5cf6;
-  --accent-dim:     #1e0f3a;
+  /* Accent — saturated orange (Mistral signature) */
+  --accent:         #fa520f;
+  --accent-dim:     #cc3a05;
   --accent-text:    #ffffff;
 
-  --text-primary:   #e8d5ff;
-  --text-secondary: #7a4aaa;
-  --text-muted:     #2e1a4a;
-  --text-code:      #c4b5fd;
+  /* Text — cool dark ink */
+  --text-primary:   #1f1f1f;
+  --text-secondary: #4a4a4a;
+  --text-muted:     #8a8a8a;
+  --text-code:      #a8a8a8;
 
-  --status-success:     #06b6d4;
-  --status-success-bg:  #051820;
-  --status-warning:     #f59e0b;
-  --status-warning-bg:  #1a1505;
-  --status-error:       #f43f5e;
-  --status-error-bg:    #2a0518;
-  --status-info:        #8b5cf6;
-  --status-info-bg:     #1e0f3a;
+  /* Status */
+  --status-success:     #5db872;
+  --status-success-bg:  #eaf7ed;
+  --status-warning:     #d4a017;
+  --status-warning-bg:  #fcf3e0;
+  --status-error:       #c64545;
+  --status-error-bg:    #f9e8e8;
+  --status-info:        #5db8a6;
+  --status-info-bg:     #e8f4f1;
 
-  --bubble-user:    #1e0f3a;
-  --bubble-agent:   #0d0818;
+  /* Chat bubbles */
+  --bubble-user:    #fff8e0;
+  --bubble-agent:   #fafafa;
 
+  /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'EB Garamond', 'Times New Roman', Georgia, serif;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
 }
 
-/* ─── Warm Dark ────────────────────────────────────────────────────────── */
-[data-theme="warm-dark"] {
-  --bg-base:        #0f0a05;
-  --bg-surface:     #130d08;
-  --bg-elevated:    #1a1208;
-  --bg-code:        #0a0703;
+/* ─── Cohere (editorial blue on white) ─────────────────────────────────── */
+[data-theme="cohere"] {
+  /* Surfaces — stark white canvas */
+  --bg-base:        #ffffff;
+  --bg-surface:     #eeece7;
+  --bg-elevated:    #ffffff;
+  --bg-code:        #17171c;
 
-  --border:         #251a0f;
-  --border-subtle:  #1a1208;
+  /* Borders */
+  --border:         #d9d9dd;
+  --border-subtle:  #f2f2f2;
 
-  --accent:         #f59e0b;
-  --accent-dim:     #251a05;
-  --accent-text:    #0f0a05;
-
-  --text-primary:   #f0e6d0;
-  --text-secondary: #8a6a40;
-  --text-muted:     #3a2a15;
-  --text-code:      #fcd34d;
-
-  --status-success:     #22c55e;
-  --status-success-bg:  #0d2010;
-  --status-warning:     #f59e0b;
-  --status-warning-bg:  #251a05;
-  --status-error:       #ef4444;
-  --status-error-bg:    #2a1010;
-  --status-info:        #f59e0b;
-  --status-info-bg:     #251a05;
-
-  --bubble-user:    #251a05;
-  --bubble-agent:   #130d08;
-
-  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-/* ─── Slate Indigo ─────────────────────────────────────────────────────── */
-[data-theme="slate-indigo"] {
-  --bg-base:        #0a0c14;
-  --bg-surface:     #0d0f18;
-  --bg-elevated:    #12151f;
-  --bg-code:        #07080f;
-
-  --border:         #1a1e2e;
-  --border-subtle:  #12151f;
-
-  --accent:         #6366f1;
-  --accent-dim:     #1a1a3a;
+  /* Accent — action blue */
+  --accent:         #1863dc;
+  --accent-dim:     #4c6ee6;
   --accent-text:    #ffffff;
 
-  --text-primary:   #e2e4f0;
-  --text-secondary: #5a6080;
-  --text-muted:     #252838;
-  --text-code:      #a5b4fc;
+  /* Text — crisp dark ink */
+  --text-primary:   #212121;
+  --text-secondary: #75758a;
+  --text-muted:     #93939f;
+  --text-code:      #ffffff;
 
-  --status-success:     #22c55e;
-  --status-success-bg:  #0d2010;
-  --status-warning:     #f59e0b;
-  --status-warning-bg:  #1a1505;
-  --status-error:       #ef4444;
-  --status-error-bg:    #2a1010;
-  --status-info:        #6366f1;
-  --status-info-bg:     #1a1a3a;
+  /* Status */
+  --status-success:     #5db872;
+  --status-success-bg:  #eaf7ed;
+  --status-warning:     #d4a017;
+  --status-warning-bg:  #fcf3e0;
+  --status-error:       #c64545;
+  --status-error-bg:    #f9e8e8;
+  --status-info:        #5db8a6;
+  --status-info-bg:     #e8f4f1;
 
-  --bubble-user:    #1a1a3a;
-  --bubble-agent:   #0d0f18;
+  /* Chat bubbles */
+  --bubble-user:    #eeece7;
+  --bubble-agent:   #ffffff;
 
+  /* Typography */
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
 }
 
-/* ─── Legacy accent-rgb compatibility ──────────────────────────────────── */
-/* These bridge the old --accent-rgb system to the new theme system. */
-/* The --accent-rgb is derived from --accent by the ThemeProvider. */
+/* ─── Replicate (cream + hot orange) ──────────────────────────────────── */
+[data-theme="replicate"] {
+  /* Surfaces — warm cream developer canvas */
+  --bg-base:        #f9f7f3;
+  --bg-surface:     #f3f0e8;
+  --bg-elevated:    #ffffff;
+  --bg-code:        #202020;
+
+  /* Borders */
+  --border:         rgba(32,32,32,0.12);
+  --border-subtle:  rgba(32,32,32,0.06);
+
+  /* Accent — hot orange (the Replicate stamp) */
+  --accent:         #ea2804;
+  --accent-dim:     #c01f00;
+  --accent-text:    #ffffff;
+
+  /* Text — warm dark ink */
+  --text-primary:   #202020;
+  --text-secondary: #3a3a3a;
+  --text-muted:     #646464;
+  --text-code:      #fcfcfc;
+
+  /* Status */
+  --status-success:     #2b9a66;
+  --status-success-bg:  #eaf7ed;
+  --status-warning:     #d4a017;
+  --status-warning-bg:  #fcf3e0;
+  --status-error:       #c64545;
+  --status-error-bg:    #f9e8e8;
+  --status-info:        #5db8a6;
+  --status-info-bg:     #e8f4f1;
+
+  /* Chat bubbles */
+  --bubble-user:    #f3f0e8;
+  --bubble-agent:   #ffffff;
+
+  /* Typography */
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
+}
+
+/* ─── OpenCode (terminal monospace) ──────────────────────────────────── */
+[data-theme="opencode"] {
+  /* Surfaces — warm cream blush canvas */
+  --bg-base:        #fdfcfc;
+  --bg-surface:     #f8f7f7;
+  --bg-elevated:    #f1eeee;
+  --bg-code:        #201d1d;
+
+  /* Borders */
+  --border:         rgba(15,0,0,0.12);
+  --border-subtle:  rgba(15,0,0,0.06);
+
+  /* Accent — near-black ink (monochrome brand) */
+  --accent:         #201d1d;
+  --accent-dim:     #0f0000;
+  --accent-text:    #fdfcfc;
+
+  /* Text — warm dark ink */
+  --text-primary:   #201d1d;
+  --text-secondary: #424245;
+  --text-muted:     #646262;
+  --text-code:      #fdfcfc;
+
+  /* Status */
+  --status-success:     #30d158;
+  --status-success-bg:  #eaf7ed;
+  --status-warning:     #ff9f0a;
+  --status-warning-bg:  #fcf3e0;
+  --status-error:       #ff3b30;
+  --status-error-bg:    #f9e8e8;
+  --status-info:        #007aff;
+  --status-info-bg:     #e8f4f1;
+
+  /* Chat bubbles */
+  --bubble-user:    #f8f7f7;
+  --bubble-agent:   #f1eeee;
+
+  /* Typography — everything is monospaced */
+  --font-ui: 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', monospace;
+  --font-display: 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', monospace;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
+}
+
+/* ─── Voltagent (dark canvas + electric green) ──────────────────────────── */
+[data-theme="voltagent"] {
+  /* Surfaces — near-black canvas */
+  --bg-base:        #101010;
+  --bg-surface:     #161616;
+  --bg-elevated:    #1a1a1a;
+  --bg-code:        #1a1a1a;
+
+  /* Borders */
+  --border:         #3d3a39;
+  --border-subtle:  #2a2a2a;
+
+  /* Accent — electric green */
+  --accent:         #00d992;
+  --accent-dim:     #10b981;
+  --accent-text:    #101010;
+
+  /* Text — off-white on dark */
+  --text-primary:   #f2f2f2;
+  --text-secondary: #bdbdbd;
+  --text-muted:     #8b949e;
+  --text-code:      #f5f6f7;
+
+  /* Status — adapted for dark canvas */
+  --status-success:     #00d992;
+  --status-success-bg:  rgba(0,217,146,0.15);
+  --status-warning:     #ff9f0a;
+  --status-warning-bg:  rgba(255,159,10,0.15);
+  --status-error:       #ff453a;
+  --status-error-bg:    rgba(255,69,58,0.15);
+  --status-info:        #5e5ce6;
+  --status-info-bg:     rgba(94,92,230,0.15);
+
+  /* Chat bubbles */
+  --bubble-user:    #1a1a1a;
+  --bubble-agent:   #101010;
+
+  /* Typography */
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ── HeroUI variable overrides ── */
+  --background:     var(--bg-base);
+  --foreground:     var(--text-primary);
+  --surface:        var(--bg-elevated);
+  --surface-foreground: var(--text-primary);
+  --muted:          var(--text-muted);
+  --default:        var(--bg-surface);
+  --default-foreground: var(--text-primary);
+  --accent-foreground: var(--accent-text);
+  --accent-soft:    color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-soft-foreground: var(--text-secondary);
+  --accent-hover:   color-mix(in srgb, var(--accent) 90%, var(--accent-text));
+  --field-background: var(--bg-elevated);
+  --field-foreground: var(--text-primary);
+  --field-placeholder: var(--text-muted);
+}
+
+/* ─── Root variables (fallback + global) ───────────────────────────────── */
 :root {
-  --accent-rgb: 59, 130, 246;
+  --accent-rgb: 204, 120, 92;
   --accent-light: color-mix(in srgb, var(--accent) 70%, white);
   --accent-dark: var(--accent);
   --accent-glow: rgba(var(--accent-rgb), 0.35);
   --border-glow: rgba(var(--accent-rgb), 0.25);
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --radius-xl: 32px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 }

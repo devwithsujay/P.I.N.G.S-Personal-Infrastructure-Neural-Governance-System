@@ -76,6 +76,9 @@ export const getResearchRun = (id) => client.get(`/research/runs/${id}`)
 export const deleteResearchRun = (id) => client.delete(`/research/runs/${id}`)
 export const discussResearch = (data) => client.post('/research/discuss', data)
 
+export const startDeepResearch = (data) => client.post('/research/deep', data)
+export const downloadDeepResearchDocx = (id) => `${client.defaults.baseURL || '/api'}/research/deep/${id}/download.docx`
+
 export const exportContent = (data) => client.post('/export', data)
 
 export const getModels = () => client.get('/models')

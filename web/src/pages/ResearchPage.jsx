@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { startResearch, getResearchQueue, listResearchRuns, getResearchRun, deleteResearchRun, discussResearch, getModels } from '../api'
+import { startResearch, startDeepResearch, getResearchQueue, listResearchRuns, getResearchRun, deleteResearchRun, discussResearch, getModels, downloadDeepResearchDocx } from '../api'
 import { useToast } from '../components/Toast'
+import { Button, Spinner } from '@heroui/react'
 
 const MODES = [
   { id: 'auto', label: 'Auto', color: 'var(--accent)' },
@@ -9,6 +10,7 @@ const MODES = [
   { id: 'compare', label: 'Compare', color: '#fdcb6e' },
   { id: 'how-to', label: 'How-To', color: '#e17055' },
   { id: 'fact-check', label: 'Fact-Check', color: '#74b9ff' },
+  { id: 'deep', label: 'Deep', color: '#a78bfa' },
 ]
 
 const ROUNDS = [1, 2, 3, 4, 5]
@@ -233,9 +235,11 @@ export default function ResearchPage() {
   const [runs, setRuns] = useState([])
   const [selectedRun, setSelectedRun] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [deepLoading, setDeepLoading] = useState(false)
   const [discussMsg, setDiscussMsg] = useState('')
   const [models, setModels] = useState([])
   const [reportTab, setReportTab] = useState('summary')
+  const [deepSections, setDeepSections] = useState(12)
   const toast = useToast()
 
   const loadData = useCallback(async () => {
@@ -262,7 +266,17 @@ export default function ResearchPage() {
   }, [queue.length, loadData])
 
   const handleStart = async () => {
-    if (!topic.trim() || loading) return
+    if (!topic.trim() || loading || deepLoading) return
+    if (mode === 'deep') {
+      setDeepLoading(true)
+      try {
+        await startDeepResearch({ topic: topic.trim(), sections: deepSections, max_sources: 50 })
+        setTopic('')
+        toast.success('Deep research started (this may take several minutes)')
+        await loadData()
+      } catch { toast.error('Failed to start deep research') } finally { setDeepLoading(false) }
+      return
+    }
     setLoading(true)
     try {
       await startResearch({ topic: topic.trim(), mode, rounds, search_engine: searchEngine === 'auto' ? null : searchEngine, model: model || undefined })
@@ -325,27 +339,21 @@ export default function ResearchPage() {
                   className="input-field flex-1 !pl-10"
                 />
               </div>
-              <button
-                onClick={handleStart}
-                disabled={!topic.trim() || loading}
-                className="btn-accent flex items-center gap-2 !px-5"
+              <Button
+                onPress={handleStart}
+                isDisabled={!topic.trim() || loading || deepLoading}
+                className={`flex items-center gap-2 !px-5 ${mode === 'deep' ? 'btn-deep' : 'btn-accent'}`}
+                startContent={loading || deepLoading ? <Spinner size="sm" className="text-white" /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
               >
-                {loading ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                )}
-                Research
-              </button>
+                {deepLoading ? 'Researching...' : mode === 'deep' ? 'Deep Research' : 'Research'}
+              </Button>
             </div>
 
             <div className="flex flex-wrap gap-2 mb-3">
               {MODES.map(m => (
-                <button
+                <Button
                   key={m.id}
-                  onClick={() => setMode(m.id)}
+                  onPress={() => setMode(m.id)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
                     mode === m.id ? 'text-white shadow-lg' : 'text-text-secondary hover:text-text-primary'
                   }`}
@@ -355,21 +363,35 @@ export default function ResearchPage() {
                   }
                 >
                   {m.label}
-                </button>
+                </Button>
               ))}
             </div>
 
-            <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
-              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
+            <Button
+              onPress={() => setSettingsOpen(!settingsOpen)}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors bg-transparent"
+              startContent={<svg className={`w-3 h-3 transition-transform duration-200 ${settingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>}
             >
-              <svg className={`w-3 h-3 transition-transform duration-200 ${settingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
               Settings
-            </button>
+            </Button>
 
-            {settingsOpen && (
+            {settingsOpen && mode === 'deep' && (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fade-in">
+                <div>
+                  <label className="block text-xs text-text-muted mb-1.5">Sections ({deepSections})</label>
+                  <input type="range" min={8} max={20} value={deepSections} onChange={e => setDeepSections(Number(e.target.value))} className="w-full accent-[#a78bfa]" />
+                  <span className="text-[10px] text-text-muted mt-1 block">More sections = more comprehensive report</span>
+                </div>
+                <div>
+                  <label className="block text-xs text-text-muted mb-1.5">Model</label>
+                  <select value={model} onChange={e => setModel(e.target.value)} className="input-field" style={{ colorScheme: 'dark' }}>
+                    <option value="" className="text-text-primary" style={{ background: 'var(--bg-elevated)' }}>Default</option>
+                    {models.map(m => <option key={m.id || m} value={m.id || m} className="text-text-primary" style={{ background: 'var(--bg-elevated)' }}>{m.name || m.id || m}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+            {settingsOpen && mode !== 'deep' && (
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
                 <div>
                   <label className="block text-xs text-text-muted mb-1.5">Rounds</label>
@@ -420,11 +442,11 @@ export default function ResearchPage() {
               <div className="px-5 pt-5 pb-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                 <div className="flex items-start justify-between mb-1">
                   <h2 className="text-lg font-brand font-semibold text-text-primary leading-tight">{selectedRun.topic || selectedRun.title}</h2>
-                  <button onClick={() => setSelectedRun(null)} className="p-1.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all ml-3 flex-shrink-0" aria-label="Close report">
+                  <Button isIconOnly variant="light" onPress={() => setSelectedRun(null)} aria-label="Close report" className="p-1.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all ml-3 flex-shrink-0">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                  </button>
+                  </Button>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-text-muted">
                   <span className="px-2 py-0.5 rounded-full capitalize font-medium" style={{
@@ -433,6 +455,16 @@ export default function ResearchPage() {
                   }}>{selectedRun.mode || 'auto'}</span>
                   <span>{selectedRun.sources_count || extractSections(selectedRun.report).sources.length || 0} sources</span>
                   <span>{new Date(selectedRun.created_at || selectedRun.timestamp).toLocaleDateString()}</span>
+                  {selectedRun.report_docx_path && (
+                    <a href={downloadDeepResearchDocx(selectedRun.id)} target="_blank" rel="noopener noreferrer"
+                      className="ml-auto inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all"
+                      style={{ background: '#a78bfa20', color: '#a78bfa' }}>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download DOCX
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -452,9 +484,9 @@ export default function ResearchPage() {
                     placeholder="Ask about this research..."
                     className="input-field flex-1"
                   />
-                  <button onClick={() => handleDiscuss(selectedRun.id)} className="btn-primary">
+                  <Button variant="light" onPress={() => handleDiscuss(selectedRun.id)} className="btn-primary">
                     Send
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -486,6 +518,7 @@ export default function ResearchPage() {
                               backgroundColor: (MODES.find(m => m.id === run.mode)?.color || 'var(--accent)') + '20',
                               color: MODES.find(m => m.id === run.mode)?.color || 'var(--accent)'
                             }}>{run.mode || 'auto'}</span>
+                            {run.type === 'deep' && <span className="status-pill text-xs" style={{ background: '#a78bfa20', color: '#a78bfa' }}>DEEP</span>}
                             {runHasReport && <span className="status-pill status-pill-success text-xs">REPORT</span>}
                           </div>
                           <div className="text-xs text-text-muted">
@@ -493,12 +526,22 @@ export default function ResearchPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                          {run.status === 'running' && <span className="w-3 h-3 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />}
-                          <button onClick={() => handleDelete(run.id)} aria-label="Delete research run" className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-red-400 transition-all">
+                          {run.status === 'running' && <span className="w-3 h-3 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+                          }
+                          {run.report_docx_path && (
+                            <a href={downloadDeepResearchDocx(run.id)} target="_blank" rel="noopener noreferrer"
+                              className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-green-400 transition-all"
+                              title="Download DOCX">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </a>
+                          )}
+                          <Button isIconOnly variant="light" onPress={() => handleDelete(run.id)} aria-label="Delete research run" className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-red-400 transition-all">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </div>
 
@@ -508,7 +551,7 @@ export default function ResearchPage() {
                           <div className="flex gap-2 mt-3">
                             <input type="text" value={discussMsg} onChange={e => setDiscussMsg(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && handleDiscuss(run.id)} placeholder="Discuss this research..." className="input-field flex-1 text-xs" />
-                            <button onClick={() => handleDiscuss(run.id)} className="btn-primary !text-xs !px-3">Send</button>
+                            <Button variant="light" onPress={() => handleDiscuss(run.id)} className="btn-primary !text-xs !px-3">Send</Button>
                           </div>
                         </div>
                       )}

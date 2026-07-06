@@ -119,6 +119,19 @@ async def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_research_status ON research_runs(status);
         """)
         await db.commit()
+        migrations = [
+            "ALTER TABLE research_runs ADD COLUMN type TEXT DEFAULT 'standard'",
+            "ALTER TABLE research_runs ADD COLUMN outline TEXT DEFAULT NULL",
+            "ALTER TABLE research_runs ADD COLUMN progress INTEGER DEFAULT 0",
+            "ALTER TABLE research_runs ADD COLUMN report_docx_path TEXT DEFAULT NULL",
+        ]
+        for migration in migrations:
+            try:
+                await db.execute(migration)
+                await db.commit()
+            except Exception:
+                pass  # Column already exists
+
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
@@ -573,9 +586,10 @@ async def create_research_run(topic: str, mode: str = "balanced") -> int:
             "DELETE FROM research_runs WHERE topic = ? AND status = 'running'",
             (topic,),
         )
+        research_type = "deep" if mode == "deep" else "standard"
         cursor = await db.execute(
-            "INSERT INTO research_runs (topic, mode) VALUES (?, ?)",
-            (topic, mode),
+            "INSERT INTO research_runs (topic, mode, type) VALUES (?, ?, ?)",
+            (topic, mode, research_type),
         )
         await db.commit()
         return cursor.lastrowid or 0
@@ -586,7 +600,7 @@ async def create_research_run(topic: str, mode: str = "balanced") -> int:
 async def update_research_run(run_id: int, **kwargs: Any) -> bool:
     db = await get_db()
     try:
-        allowed = {"status", "sources_count", "report_html", "report_path", "error", "completed_at"}
+        allowed = {"status", "sources_count", "report_html", "report_path", "error", "completed_at", "type", "outline", "progress", "report_docx_path"}
         updates = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
         if not updates:
             return False

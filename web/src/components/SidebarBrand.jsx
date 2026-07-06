@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function SidebarBrand({ collapsed }) {
   return (
-    <div className="px-4 py-5 border-b flex items-center gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
+    <div className="px-4 py-5 border-b-2 flex items-center gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
       <div className="relative w-6 h-6 flex-shrink-0">
         <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
           <circle cx="16" cy="16" r="3" fill="var(--accent)" />

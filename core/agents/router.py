@@ -123,13 +123,7 @@ async def dispatch_to_agent(agent_id: str, message: str, session_id: str, person
     if identity:
         agent_prompt += f"\n{identity}"
 
-    if agent_id == "coder":
-        from core.agents.codegen import handle_codegen
-        return await handle_codegen(message, agent_prompt, model=agent_model)
-    elif agent_id == "researcher":
-        from core.agents.research import run_research
-        return await run_research(message)
-    elif agent_id == "planner":
+    if agent_id == "planner":
         from core.agents.tasks import handle_tasks
         return await handle_tasks(message, agent_prompt)
     elif agent_id == "homelab-monitor":
@@ -160,15 +154,6 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
     elif intent == "tasks":
         from core.agents.tasks import handle_tasks
         response = await handle_tasks(clean_message, system_prompt)
-    elif intent == "codegen":
-        from core.agents.codegen import handle_codegen
-        response = await handle_codegen(clean_message, system_prompt, model=model)
-    elif intent == "report":
-        from core.agents.report import handle_report
-        response = await handle_report(clean_message, persona or {})
-    elif intent == "research":
-        from core.agents.research import run_research
-        response = await run_research(clean_message)
     elif intent == "browse":
         from core.tools.browser import web_search
         query = clean_message

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import { Button } from '@heroui/react'
 import { getTasks, createTask, updateTask, deleteTask } from '../api'
 import { useToast } from '../components/Toast'
 import EmptyState from '../components/EmptyState'
@@ -55,16 +56,16 @@ const TaskCard = React.memo(function TaskCard({ task, index, onEdit, onDelete })
               </div>
             </div>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
-              <button onClick={(e) => { e.stopPropagation(); onEdit(task) }} className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-text-secondary" aria-label="Edit task">
+              <Button isIconOnly aria-label="Edit task" size="sm" variant="light" onPress={() => onEdit(task)} className="text-text-muted hover:text-text-secondary min-w-0 w-auto h-auto p-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); onDelete(task.id) }} className="p-1 rounded-lg hover:bg-bg-surface text-text-muted hover:text-red-400" aria-label="Delete task">
+              </Button>
+              <Button isIconOnly aria-label="Delete task" size="sm" variant="light" onPress={() => onDelete(task.id)} className="text-text-muted hover:text-red-400 min-w-0 w-auto h-auto p-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -190,12 +191,12 @@ export default function Tasks() {
           <span className="font-brand text-sm font-medium text-text-primary">Tasks</span>
           <span className="text-xs text-text-muted">({totalTasks})</span>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary !text-xs flex items-center gap-1.5">
+        <Button size="sm" variant="light" onPress={() => { resetForm(); setShowForm(true) }} className="btn-primary !text-xs min-w-0">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Add Task
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -212,10 +213,10 @@ export default function Tasks() {
                 <option value="urgent" className="text-text-primary" style={{ background: 'var(--bg-elevated)' }}>Urgent</option>
               </select>
               <div className="flex gap-2">
-                <button onClick={resetForm} className="btn-ghost !text-xs">Cancel</button>
-                <button onClick={editingTask ? handleEditSubmit : handleCreate} disabled={!form.title.trim() || loading} className="btn-primary !text-xs" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
+                <Button size="sm" variant="light" onPress={resetForm} className="!text-xs">Cancel</Button>
+                <Button size="sm" variant="light" onPress={editingTask ? handleEditSubmit : handleCreate} isDisabled={!form.title.trim() || loading} className="btn-primary !text-xs" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
                   {editingTask ? 'Update' : 'Create'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

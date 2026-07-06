@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { Button } from '@heroui/react'
 import { useChat } from '../context/ChatContext'
 import EmptyState from '../components/EmptyState'
 
@@ -38,7 +39,13 @@ function CodeBlock({ language, children }) {
     <div className="code-block-wrapper group">
       <div className="code-block-header">
         <span className="code-block-lang">{language || 'code'}</span>
-        <button onClick={handleCopy} className={`code-block-copy ${copied ? 'copied' : ''}`}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onPress={handleCopy}
+          className="code-block-copy"
+          aria-label={copied ? 'Copied' : 'Copy code'}
+        >
           {copied ? (
             <span className="flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +61,7 @@ function CodeBlock({ language, children }) {
               Copy
             </span>
           )}
-        </button>
+        </Button>
       </div>
       <pre className="p-3 overflow-x-auto text-xs m-0 bg-transparent border-0">
         <code ref={codeRef} className="font-mono text-text-secondary">{children}</code>
@@ -83,10 +90,13 @@ function MessageActions({ content }) {
     >
       {show && (
         <div className="absolute -top-8 right-0 flex items-center gap-1 glass-modal rounded-lg px-1 py-0.5 fade-in z-10">
-          <button
-            onClick={handleCopy}
-            className="p-1.5 rounded-md hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-colors"
-            title="Copy text"
+          <Button
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            onPress={handleCopy}
+            aria-label="Copy text"
+            className="min-w-0 h-auto p-1.5 text-text-muted hover:text-text-secondary"
           >
             {copied ? (
               <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +107,7 @@ function MessageActions({ content }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -109,9 +119,11 @@ function AgentCard({ agent, color, onClick }) {
   const initial = (AGENT_AVATARS[name] || name.charAt(0)).slice(0, 2).toUpperCase()
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-surface/60 transition-all duration-200 text-left group"
+    <Button
+      fullWidth
+      variant="ghost"
+      onPress={onClick}
+      className="flex items-center gap-3 px-4 py-3 rounded-xl text-left group h-auto"
     >
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 transition-transform group-hover:scale-105"
@@ -131,7 +143,7 @@ function AgentCard({ agent, color, onClick }) {
       <svg className="w-4 h-4 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
       </svg>
-    </button>
+    </Button>
   )
 }
 
@@ -260,26 +272,28 @@ export default function Chat() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={clearMessages}
-            className="p-2 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-all duration-200"
-            title="New chat"
+          <Button
+            isIconOnly
+            variant="ghost"
             aria-label="New chat"
+            onPress={clearMessages}
+            className="text-text-muted hover:text-text-secondary"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-          </button>
-          <button
-            onClick={() => exportChat(messages)}
-            className="p-2 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-all duration-200"
-            title="Export"
+          </Button>
+          <Button
+            isIconOnly
+            variant="ghost"
             aria-label="Export chat"
+            onPress={() => exportChat(messages)}
+            className="text-text-muted hover:text-text-secondary"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -408,28 +422,33 @@ export default function Chat() {
             </svg>
             <span className="text-text-secondary truncate">{filePreview.name}</span>
             <span className="text-text-muted">({(filePreview.size / 1024).toFixed(1)}KB)</span>
-            <button
-              onClick={() => setFilePreview(null)}
-              className="ml-auto text-text-muted hover:text-text-secondary transition-colors"
+            <Button
+              isIconOnly
+              size="sm"
+              variant="ghost"
               aria-label="Remove file"
+              onPress={() => setFilePreview(null)}
+              className="ml-auto text-text-muted hover:text-text-secondary min-w-0 h-auto p-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
           </div>
         )}
 
         <div className="flex items-end gap-2 glass-glow-border rounded-2xl p-2" style={{ background: 'var(--bg-surface)' }}>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="p-2.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-text-secondary transition-all duration-200 flex-shrink-0"
+          <Button
+            isIconOnly
+            variant="ghost"
             aria-label="Attach file"
+            onPress={() => fileInputRef.current?.click()}
+            className="text-text-muted hover:text-text-secondary"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
-          </button>
+          </Button>
           <input
             type="file"
             ref={fileInputRef}
@@ -450,11 +469,12 @@ export default function Chat() {
           />
 
           <div className="relative flex-shrink-0" ref={modelDropdownRef}>
-            <button
-              onClick={() => setModelOpen(!modelOpen)}
-              className="px-3 py-2 rounded-xl text-text-secondary text-xs transition-all duration-200 flex items-center gap-1.5 max-w-[130px] hover:bg-bg-surface/60"
-              style={{ background: 'var(--bg-elevated)', border: 'none' }}
-              title="Select model"
+            <Button
+              variant="ghost"
+              onPress={() => setModelOpen(!modelOpen)}
+              className="px-3 py-2 text-text-secondary text-xs flex items-center gap-1.5 max-w-[130px]"
+              style={{ background: 'var(--bg-elevated)' }}
+              aria-label="Select model"
             >
               <svg className="w-3 h-3 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -463,17 +483,19 @@ export default function Chat() {
               <svg className={`w-2.5 h-2.5 transition-transform duration-200 flex-shrink-0 ${modelOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-            </button>
+            </Button>
             {modelOpen && models.length > 0 && (
               <div className="absolute bottom-full right-0 mb-2 w-60 glass-modal rounded-2xl py-2 z-50 max-h-64 overflow-y-auto animate-scale-in">
                 <div className="px-4 py-2 text-xs text-text-muted uppercase tracking-wider font-medium border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                   Select Model
                 </div>
                 {models.map(model => (
-                  <button
+                  <Button
                     key={model.id}
-                    onClick={() => { setSelectedModel(model.id); setModelOpen(false) }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-xs hover:bg-bg-surface/60 transition-all duration-200 ${
+                    fullWidth
+                    variant="ghost"
+                    onPress={() => { setSelectedModel(model.id); setModelOpen(false) }}
+                    className={`px-4 py-2.5 text-xs flex items-center justify-between ${
                       selectedModel === model.id ? 'text-accent-light' : 'text-text-secondary'
                     }`}
                   >
@@ -483,21 +505,24 @@ export default function Chat() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
           </div>
 
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isResponding}
-            className="btn-accent p-2.5 !rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+          <Button
+            isIconOnly
+            variant="light"
+            aria-label="Send message"
+            isDisabled={!input.trim() || isResponding}
+            onPress={handleSend}
+            className="btn-accent !rounded-xl flex-shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

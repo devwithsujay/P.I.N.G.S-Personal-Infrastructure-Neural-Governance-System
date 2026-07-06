@@ -128,17 +128,6 @@ class AgentOut(BaseModel):
     updated_at: str
 
 
-class ResearchRequest(BaseModel):
-    topic: str
-    mode: str = "auto"
-    max_sources: int = 10
-    depth: int = 3
-
-
-class ChatUploadRequest(BaseModel):
-    message: str = ""
-    session_id: Optional[str] = None
-
 
 class ModelInfo(BaseModel):
     id: str

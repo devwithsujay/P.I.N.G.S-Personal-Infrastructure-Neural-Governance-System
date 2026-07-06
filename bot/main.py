@@ -16,14 +16,6 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 ALLOWED_USER_ID = int(os.getenv("TELEGRAM_ALLOWED_USER_ID", "0"))
 CORE_API = os.getenv("PINGS_CORE_URL", "http://pings-core:8000")
 
-ZEN_MODELS = [
-    {"id": "opencode/mimo-v2.5-free", "name": "MiMo V2.5 Free", "tag": "default"},
-    {"id": "opencode/deepseek-v4-flash-free", "name": "DeepSeek V4 Flash Free", "tag": ""},
-    {"id": "opencode/nemotron-3-ultra-free", "name": "Nemotron 3 Ultra Free", "tag": ""},
-    {"id": "opencode/big-pickle", "name": "Big Pickle", "tag": ""},
-    {"id": "opencode/north-mini-code-free", "name": "North Mini Code Free", "tag": ""},
-]
-
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
@@ -32,8 +24,15 @@ class ResearchState(StatesGroup):
     waiting_topic = State()
 
 
-class ChatState(StatesGroup):
-    waiting_message = State()
+async def fetch_models() -> list:
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{CORE_API}/api/models")
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("models", data.get("available", []))
+    except Exception:
+        return []
 
 
 def get_session_id(message: types.Message) -> str:
@@ -73,76 +72,9 @@ async def cmd_start(message: types.Message):
         "Personal Infrastructure & Neural Governance System\n\n"
         "Commands:\n"
         "/chat - Start a chat session\n"
-        "/clear - Clear conversation history\n"
-        "/history - View recent history\n"
-        "/tasks - View active tasks\n"
-        "/status - System status\n"
         "/model - Switch AI model\n"
         "/research - Start a research run\n\n"
         "Send any message to chat, or attach a photo/document."
-    )
-
-
-# ── /clear ──────────────────────────────────────────────────────────────────
-@dp.message(Command("clear"))
-async def cmd_clear(message: types.Message):
-    if not is_allowed(message):
-        return
-    sid = get_session_id(message)
-    await core_request("/api/chat/clear", {"session_id": sid})
-    await message.reply("History cleared.")
-
-
-# ── /history ────────────────────────────────────────────────────────────────
-@dp.message(Command("history"))
-async def cmd_history(message: types.Message):
-    if not is_allowed(message):
-        return
-    sid = get_session_id(message)
-    data = await core_get("/api/chat/history", {"session_id": sid, "limit": 20})
-    messages = data.get("messages", [])
-    if not messages:
-        await message.reply("No history found.")
-        return
-    lines = []
-    for m in messages:
-        role = m.get("role", "unknown")
-        content = m.get("content", "")[:200]
-        lines.append(f"<b>{role}</b>: {content}")
-    await message.reply("\n\n".join(lines))
-
-
-# ── /tasks ──────────────────────────────────────────────────────────────────
-@dp.message(Command("tasks"))
-async def cmd_tasks(message: types.Message):
-    if not is_allowed(message):
-        return
-    sid = get_session_id(message)
-    data = await core_get("/api/tasks/list", {"session_id": sid})
-    tasks = data.get("tasks", [])
-    if not tasks:
-        await message.reply("No active tasks.")
-        return
-    lines = []
-    for t in tasks:
-        status_icon = "⏳" if t["status"] == "pending" else "✅" if t["status"] == "done" else "🔄"
-        lines.append(f"{status_icon} <b>{t['title']}</b> - {t['status']}")
-    await message.reply("\n".join(lines))
-
-
-# ── /status ─────────────────────────────────────────────────────────────────
-@dp.message(Command("status"))
-async def cmd_status(message: types.Message):
-    if not is_allowed(message):
-        return
-    data = await core_get("/api/status")
-    model = data.get("current_model", "unknown")
-    uptime = data.get("uptime", "unknown")
-    await message.reply(
-        f"<b>System Status</b>\n\n"
-        f"Model: {model}\n"
-        f"Uptime: {uptime}\n"
-        f"Core API: OK"
     )
 
 
@@ -151,18 +83,20 @@ async def cmd_status(message: types.Message):
 async def cmd_model(message: types.Message):
     if not is_allowed(message):
         return
+    models = await fetch_models()
+    if not models:
+        await message.reply("No models available from core API.")
+        return
     sid = get_session_id(message)
     data = await core_get("/api/model/current", {"session_id": sid})
-    current = data.get("model", "opencode/mimo-v2.5-free")
+    current = data.get("model", "")
 
     buttons = []
-    for i, m in enumerate(ZEN_MODELS, 1):
-        label = f"{m['name']}"
-        if m["id"] == current:
-            label = f"✅ {label}"
-        if m["tag"] == "default" and m["id"] != current:
-            label = f"⭐ {label}"
-        buttons.append([InlineKeyboardButton(text=label, callback_data=f"model:{m['id']}")])
+    for m in models:
+        mid = m.get("id", m.get("model", ""))
+        name = m.get("name", mid)
+        label = f"✅ {name}" if mid == current else name
+        buttons.append([InlineKeyboardButton(text=label, callback_data=f"model:{mid}")])
 
     kb = InlineKeyboardMarkup(inline_keyboard=buttons)
     await message.reply(f"<b>Current model:</b> {current}\n\nSelect a model:", reply_markup=kb)
@@ -173,8 +107,7 @@ async def callback_model(callback: types.CallbackQuery):
     model_id = callback.data.split(":", 1)[1]
     sid = get_session_id(callback.message)
     await core_request("/api/model/set", {"session_id": sid, "model": model_id})
-    name = next((m["name"] for m in ZEN_MODELS if m["id"] == model_id), model_id)
-    await callback.message.edit_text(f"Switched to <b>{name}</b>.")
+    await callback.message.edit_text(f"Switched to <b>{model_id}</b>.")
     await callback.answer()
 
 
