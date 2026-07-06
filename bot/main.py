@@ -3,10 +3,8 @@ import logging
 import httpx
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.client.default import DefaultBotProperties
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
+
 from aiogram.enums import ParseMode
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -18,21 +16,6 @@ CORE_API = os.getenv("PINGS_CORE_URL", "http://pings-core:8000")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
-
-
-class ResearchState(StatesGroup):
-    waiting_topic = State()
-
-
-async def fetch_models() -> list:
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(f"{CORE_API}/api/models")
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("models", data.get("available", []))
-    except Exception:
-        return []
 
 
 def get_session_id(message: types.Message) -> str:
@@ -53,14 +36,6 @@ async def core_request(path: str, payload: dict) -> dict:
         return resp.json()
 
 
-async def core_get(path: str, params: dict = None) -> dict:
-    url = f"{CORE_API}{path}"
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.get(url, params=params)
-        resp.raise_for_status()
-        return resp.json()
-
-
 # ── /start ──────────────────────────────────────────────────────────────────
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -70,65 +45,9 @@ async def cmd_start(message: types.Message):
     await message.reply(
         "<b>P.I.N.G.S Core v2</b>\n"
         "Personal Infrastructure & Neural Governance System\n\n"
-        "Commands:\n"
-        "/chat - Start a chat session\n"
-        "/model - Switch AI model\n"
-        "/research - Start a research run\n\n"
         "Send any message to chat, or attach a photo/document."
     )
 
-
-# ── /model ──────────────────────────────────────────────────────────────────
-@dp.message(Command("model"))
-async def cmd_model(message: types.Message):
-    if not is_allowed(message):
-        return
-    models = await fetch_models()
-    if not models:
-        await message.reply("No models available from core API.")
-        return
-    sid = get_session_id(message)
-    data = await core_get("/api/model/current", {"session_id": sid})
-    current = data.get("model", "")
-
-    buttons = []
-    for m in models:
-        mid = m.get("id", m.get("model", ""))
-        name = m.get("name", mid)
-        label = f"✅ {name}" if mid == current else name
-        buttons.append([InlineKeyboardButton(text=label, callback_data=f"model:{mid}")])
-
-    kb = InlineKeyboardMarkup(inline_keyboard=buttons)
-    await message.reply(f"<b>Current model:</b> {current}\n\nSelect a model:", reply_markup=kb)
-
-
-@dp.callback_query(F.data.startswith("model:"))
-async def callback_model(callback: types.CallbackQuery):
-    model_id = callback.data.split(":", 1)[1]
-    sid = get_session_id(callback.message)
-    await core_request("/api/model/set", {"session_id": sid, "model": model_id})
-    await callback.message.edit_text(f"Switched to <b>{model_id}</b>.")
-    await callback.answer()
-
-
-# ── /research ───────────────────────────────────────────────────────────────
-@dp.message(Command("research"))
-async def cmd_research(message: types.Message, state: FSMContext):
-    if not is_allowed(message):
-        return
-    await state.set_state(ResearchState.waiting_topic)
-    await message.reply("What topic should I research?")
-
-
-@dp.message(ResearchState.waiting_topic)
-async def process_research_topic(message: types.Message, state: FSMContext):
-    topic = message.text.strip()
-    sid = get_session_id(message)
-    await message.reply(f"Starting research on: <b>{topic}</b>...")
-    data = await core_request("/api/research/start", {"session_id": sid, "topic": topic})
-    run_id = data.get("run_id", "unknown")
-    await message.reply(f"Research run created: <code>{run_id}</code>\nResults will be sent when complete.")
-    await state.clear()
 
 
 # ── Photo / Document uploads ────────────────────────────────────────────────

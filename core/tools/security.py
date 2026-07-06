@@ -54,5 +54,4 @@ def is_action_safe(message: str) -> Tuple[bool, str]:
     return True, "safe"
 
 
-def get_confirm_patterns() -> List[str]:
-    return CONFIRM_BEFORE
+

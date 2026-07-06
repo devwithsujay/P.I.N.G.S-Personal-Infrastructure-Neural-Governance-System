@@ -719,17 +719,6 @@ async def get_patterns() -> Dict[str, List[str]]:
     return {"danger_patterns": get_dangerous_patterns()}
 
 
-@app.get("/suggestions")
-async def get_suggestions() -> List[Dict[str, Any]]:
-    return [
-        {"id": 1, "text": "What's the status of my homelab?"},
-        {"id": 2, "text": "Create a task to update Docker containers"},
-        {"id": 3, "text": "Search for best practices in Python async"},
-        {"id": 4, "text": "Generate a backup script"},
-        {"id": 5, "text": "Write a research report on quantum computing"},
-    ]
-
-
 @app.get("/persona/journal")
 async def get_journal() -> Dict[str, str]:
     journal_path = Path(settings.JOURNAL_PATH)

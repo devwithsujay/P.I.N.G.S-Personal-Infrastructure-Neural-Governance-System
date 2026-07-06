@@ -56,6 +56,15 @@ SEED_DOCUMENTS = [
 
 
 async def seed_chroma_on_startup() -> int:
+    try:
+        from core.memory.chroma import chroma_memory
+        existing = await chroma_memory.count()
+        if existing and existing > 0:
+            logger.info(f"ChromaDB already has {existing} entries, skipping seed")
+            return 0
+    except Exception:
+        logger.debug("Could not check ChromaDB count, proceeding with seed")
+
     count = 0
     for doc in SEED_DOCUMENTS:
         try:
