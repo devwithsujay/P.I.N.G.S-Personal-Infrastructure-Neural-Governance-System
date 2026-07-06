@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from core.config import settings
-from core.tools.base import BaseTool
 
 logger = logging.getLogger("pings.tools.file_tool")
 
@@ -80,32 +79,3 @@ async def list_files(path: str = ".") -> str:
         return f"Error listing files: {e}"
 
 
-class FileTool(BaseTool):
-    name = "files"
-    description = "Read, write, and list files in the workspace"
-    trigger_patterns = ["file", "read file", "write file", "list files", "show file", "workspace"]
-    priority = 20
-
-    async def run(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
-        msg_lower = message.lower()
-        parts = message.split(maxsplit=2)
-
-        if msg_lower.startswith("read file ") or msg_lower.startswith("show file "):
-            path = message.split(maxsplit=1)[1] if len(parts) > 1 else ""
-            return await read_file(path)
-
-        if msg_lower.startswith("write file "):
-            if len(parts) < 3:
-                return "Usage: write file <path> <content>"
-            path = parts[1]
-            content = parts[2] if len(parts) > 2 else ""
-            return await write_file(path, content)
-
-        if msg_lower.startswith("list files") or msg_lower.startswith("show files"):
-            path = parts[2] if len(parts) > 2 else "."
-            return await list_files(path)
-
-        if "workspace" in msg_lower:
-            return await list_files(".")
-
-        return await list_files(".")

@@ -40,7 +40,6 @@ from core.tools.system import list_containers, control_container, get_container_
 from core.tools.browser import web_search, fetch_url
 from core.tools.file_tool import read_file, write_file, list_files
 from core.tools.security import is_action_safe, get_dangerous_patterns
-from core.tools.base import tool_registry
 
 logger = logging.getLogger("pings.main")
 
@@ -704,12 +703,6 @@ async def list_skills() -> List[Dict[str, str]]:
         {"name": "system", "description": "Manage Docker containers"},
         {"name": "files", "description": "Read/write/list workspace files"},
     ]
-
-
-@app.get("/tools")
-async def list_tools() -> List[Dict[str, str]]:
-    tools = tool_registry.get_all()
-    return [{"name": t.name, "description": t.description} for t in tools]
 
 
 @app.post("/export")

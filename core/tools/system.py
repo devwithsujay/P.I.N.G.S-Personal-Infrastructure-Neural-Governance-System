@@ -2,7 +2,6 @@ import logging
 import asyncio
 from typing import Any, Dict, Optional
 
-from core.tools.base import BaseTool
 from core.tools.ssh import run_ssh_command, get_ssh_config_from_db
 from core.tools.security import is_action_safe
 
@@ -68,41 +67,3 @@ async def get_container_stats() -> str:
     return "\n".join(lines) if len(lines) > 1 else "No stats available."
 
 
-class SystemTool(BaseTool):
-    name = "system"
-    description = "Manage Docker containers on the homelab server"
-    trigger_patterns = ["container", "docker", "restart container", "stop container", "start container"]
-    priority = 40
-
-    async def run(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
-        msg_lower = message.lower()
-
-        if "list" in msg_lower or "status" in msg_lower or "all containers" in msg_lower:
-            return await list_containers()
-        if "stats" in msg_lower or "usage" in msg_lower:
-            return await get_container_stats()
-
-        for action in ["restart", "stop", "start"]:
-            if action in msg_lower:
-                words = msg_lower.split()
-                try:
-                    idx = words.index(action)
-                    name = words[idx + 1] if idx + 1 < len(words) else ""
-                except (ValueError, IndexError):
-                    name = ""
-                if name:
-                    return await control_container(action, name)
-                return f"Please specify the container name. Example: {action} <container_name>"
-
-        if "logs" in msg_lower:
-            words = msg_lower.split()
-            try:
-                idx = words.index("logs")
-                name = words[idx + 1] if idx + 1 < len(words) else ""
-            except (ValueError, IndexError):
-                name = ""
-            if name:
-                return await control_container("logs", name)
-            return "Please specify the container name for logs."
-
-        return await list_containers()

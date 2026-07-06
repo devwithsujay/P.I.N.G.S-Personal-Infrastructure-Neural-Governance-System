@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 import httpx
 
 from core.config import settings
-from core.tools.base import BaseTool
 
 logger = logging.getLogger("pings.tools.browser")
 
@@ -155,21 +154,3 @@ async def fetch_url(url: str) -> str:
         return f"Failed to fetch URL: {e}"
 
 
-class BrowserTool(BaseTool):
-    name = "browser"
-    description = "Search the web and fetch page content"
-    trigger_patterns = ["search", "look up", "find online", "google", "browse", "what is", "who is"]
-    priority = 30
-
-    async def run(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
-        query = message
-        for prefix in ["search for ", "search ", "look up ", "google ", "find online "]:
-            if message.lower().startswith(prefix):
-                query = message[len(prefix):]
-                break
-
-        if query.startswith("http://") or query.startswith("https://"):
-            return await fetch_url(query)
-
-        logger.info(f"Browser search: {query}")
-        return await web_search(query)

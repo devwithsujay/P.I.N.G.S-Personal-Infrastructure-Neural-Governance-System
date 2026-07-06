@@ -5,7 +5,6 @@ from typing import Any, Dict, Optional
 import paramiko
 
 from core.config import settings
-from core.tools.base import BaseTool
 
 logger = logging.getLogger("pings.tools.ssh")
 
@@ -108,18 +107,3 @@ def _test_ssh_sync(config: Dict[str, Any]) -> Dict[str, Any]:
         client.close()
 
 
-class SshTool(BaseTool):
-    name = "ssh"
-    description = "Execute SSH commands on the remote server"
-    trigger_patterns = ["ssh", "server", "remote", "execute on", "run on host"]
-    priority = 50
-
-    async def run(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
-        command = message
-        for prefix in ["ssh ", "execute ", "run on server ", "run on host ", "remote "]:
-            if message.lower().startswith(prefix):
-                command = message[len(prefix):]
-                break
-        logger.info(f"SSH tool executing: {command[:100]}")
-        result = await run_ssh_command(command)
-        return result
