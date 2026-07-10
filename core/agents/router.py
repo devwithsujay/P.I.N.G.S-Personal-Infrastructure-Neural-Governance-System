@@ -109,13 +109,17 @@ def extract_agent_mention(message: str) -> Tuple[Optional[str], str]:
     return None, message
 
 
+def is_explicit_model(model: Optional[str]) -> bool:
+    return model is not None and model != ""
+
+
 async def dispatch_to_agent(agent_id: str, message: str, session_id: str, persona: Optional[Dict[str, str]] = None, model: Optional[str] = None, extra_parts: Optional[List[Dict[str, Any]]] = None) -> str:
     agent_config = AGENT_ROLES.get(agent_id)
     if not agent_config:
         from core.agents.opencode_engine import run_opencode_task
         return await run_opencode_task(message, "", model=model, extra_parts=extra_parts)
 
-    agent_model = model or agent_config["model"]
+    agent_model = model if is_explicit_model(model) else agent_config["model"]
     role = agent_config["role"]
     identity = (persona or {}).get("identity", "")
 
@@ -148,6 +152,16 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
     intent = classify_intent(clean_message)
     logger.info(f"Intent classified: {intent} for message: {clean_message[:80]}")
 
+    from core.agents.opencode_engine import run_opencode_task, _parse_model
+
+    provider_id, model_id = _parse_model(model) if model else (None, None)
+    using_ollama = provider_id == "ollama"
+
+    if using_ollama:
+        logger.info(f"Explicit Ollama model selected, bypassing intent routing")
+        response = await run_opencode_task(clean_message, system_prompt, model=model, extra_parts=extra_parts)
+        return response, "qa"
+
     if intent == "homelab":
         from core.agents.homelab import handle_homelab
         response = await handle_homelab(clean_message, system_prompt)
@@ -163,7 +177,6 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
                 break
         response = await web_search(query)
     else:
-        from core.agents.opencode_engine import run_opencode_task
         response = await run_opencode_task(clean_message, system_prompt, model=model, extra_parts=extra_parts)
 
     return response, intent

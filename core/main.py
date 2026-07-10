@@ -23,9 +23,9 @@ from core.schemas import (
 from core.memory.db import (
     init_db, save_message, get_session_messages, get_all_sessions, delete_session, delete_all_sessions,
     create_task, get_tasks, get_task, update_task, delete_task, get_overdue_tasks,
-    get_setting, set_setting, get_all_settings, create_agent, get_agents, get_agent,
+    get_db_ctx, get_setting, set_setting, get_all_settings, create_agent, get_agents, get_agent,
     update_agent, delete_agent, save_agent_run, get_agent_runs, get_last_agent_run,
-    update_research_run, get_research_runs, get_research_run,
+    create_research_run, update_research_run, get_research_runs, get_research_run,
     delete_research_run,
     create_calendar_task, get_calendar_tasks, update_calendar_task, delete_calendar_task,
 )
@@ -33,7 +33,8 @@ from core.memory.persistent import add_knowledge, search_knowledge, get_memory_s
 from core.memory.seed import seed_chroma_on_startup
 from core.persona.loader import load_persona, build_system_prompt, watch_persona_files
 
-from core.agents.router import dispatch, classify_intent
+from core.agents.router import dispatch
+from core.agents.research import run_research
 from core.agents.opencode_engine import run_opencode_task
 from core.tools.ssh import test_ssh_connection, run_ssh_command, get_ssh_config_from_db
 from core.tools.system import list_containers, control_container, get_container_stats
@@ -302,10 +303,6 @@ async def get_session(session_id: str) -> List[HistoryEntry]:
         for m in messages
     ]
 
-
-@app.get("/history/{session_id}", response_model=List[HistoryEntry])
-async def get_history(session_id: str) -> List[HistoryEntry]:
-    return await get_session(session_id)
 
 
 @app.delete("/history")
@@ -592,9 +589,30 @@ async def last_agent_runs() -> List[Dict[str, Any]]:
         return [dict(r) for r in rows]
 
 
+@app.post("/research/start")
+async def start_research(request: Dict[str, Any]) -> Dict[str, Any]:
+    topic = (request.get("topic") or "").strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="Topic is required")
+    mode = request.get("mode", "auto")
+    run_id = await create_research_run(topic, mode)
+    asyncio.create_task(run_research(topic, mode, run_id=run_id))
+    return {"run_id": run_id, "status": "queued"}
+
+
+@app.post("/research/deep")
+async def start_deep_research(request: Dict[str, Any]) -> Dict[str, Any]:
+    topic = (request.get("topic") or "").strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="Topic is required")
+    run_id = await create_research_run(topic, "deep")
+    asyncio.create_task(run_research(topic, "deep", max_sources=20, run_id=run_id))
+    return {"run_id": run_id, "status": "queued"}
+
+
 @app.get("/research/queue")
 async def research_queue() -> List[Dict[str, Any]]:
-    return await get_research_runs(status="queued")
+    return await get_research_runs(status="queued") + await get_research_runs(status="running")
 
 
 @app.get("/research/runs")
@@ -636,13 +654,6 @@ async def discuss_research(request: Dict[str, Any]) -> Dict[str, Any]:
     return {"response": response}
 
 
-@app.get("/research/{run_id}")
-async def get_research_legacy(run_id: int) -> Dict[str, Any]:
-    run = await get_research_run(run_id)
-    if not run:
-        raise HTTPException(status_code=404, detail="Research run not found")
-    return run
-
 
 @app.get("/research/{run_id}/report.html", response_class=HTMLResponse)
 async def get_research_report(run_id: int) -> HTMLResponse:
@@ -680,6 +691,7 @@ async def list_models() -> ModelsResponse:
         ModelInfo(id="opencode/nemotron-3-ultra-free", name="Nemotron 3 Ultra Free", provider="zen", context_window=32768),
         ModelInfo(id="opencode/big-pickle", name="Big Pickle", provider="zen", context_window=32768),
         ModelInfo(id="opencode/north-mini-code-free", name="North Mini Code Free", provider="zen", context_window=32768),
+        ModelInfo(id="ollama/qwen3:1.7b", name="Qwen3 1.7B (Local)", provider="ollama", context_window=32768),
     ]
     return ModelsResponse(models=models, default=settings.DEFAULT_ZEN_MODEL)
 

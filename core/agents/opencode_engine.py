@@ -7,6 +7,7 @@ from core.config import settings
 logger = logging.getLogger("pings.agents.opencode")
 
 OPENCODE_BASE_URL = settings.OPENCODE_SERVER_URL
+OLLAMA_BASE_URL = "http://pings-ollama:11434"
 
 
 async def _check_health() -> bool:
@@ -57,6 +58,22 @@ async def _send_prompt(
     return "\n".join(text_parts) if text_parts else "No response from agent."
 
 
+async def _call_ollama(prompt: str, model: str, system: str = "") -> str:
+    body = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.7, "num_predict": 2048}
+    }
+    if system:
+        body["system"] = system
+
+    async with httpx.AsyncClient(timeout=300) as client:
+        resp = await client.post(f"{OLLAMA_BASE_URL}/api/generate", json=body)
+        resp.raise_for_status()
+        return resp.json().get("response", "").strip()
+
+
 def _parse_model(model: str) -> tuple[Optional[str], Optional[str]]:
     if "/" in model:
         parts = model.split("/", 1)
@@ -73,6 +90,20 @@ async def run_opencode_task(
     extra_parts: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     model = model or settings.DEFAULT_ZEN_MODEL
+
+    provider_id, model_id = _parse_model(model)
+
+    if provider_id == "ollama":
+        logger.info(f"ollama direct: model={model_id}, task={task[:80]}")
+        try:
+            result = await _call_ollama(task, model_id, system=system_context)
+            return result
+        except httpx.TimeoutException:
+            logger.error("ollama timed out")
+            return "Agent timed out. Ollama model may be too slow for this request."
+        except Exception as e:
+            logger.error(f"ollama error: {e}")
+            return f"Agent error (Ollama): {str(e)}"
 
     prompt_parts = []
     if system_context:

@@ -121,21 +121,6 @@ function ReportView({ report, reportHtml, activeTab }) {
   )
 
   if (activeTab === 'summary') {
-    if (reportHtml) {
-      return (
-        <div ref={contentRef} className="overflow-y-auto max-h-[65vh]">
-          <iframe
-            srcDoc={reportHtml}
-            title="Research Report"
-            className="w-full border-0"
-            style={{ minHeight: '500px', background: 'var(--bg-base)' }}
-            onLoad={(e) => {
-              try { e.target.style.height = Math.min((e.target.contentDocument?.body?.scrollHeight || 500) + 40, 800) + 'px' } catch {}
-            }}
-          />
-        </div>
-      )
-    }
     const summaryText = sections.summary || sections.raw.split('\n\n').slice(0, 3).join('\n\n')
     return (
       <div ref={contentRef} className="p-5 overflow-y-auto max-h-[60vh]">
@@ -145,14 +130,6 @@ function ReportView({ report, reportHtml, activeTab }) {
   }
 
   if (activeTab === 'deepdive') {
-    if (reportHtml) {
-      return (
-        <div ref={contentRef} className="overflow-y-auto max-h-[65vh]">
-          <iframe srcDoc={reportHtml} title="Deep-Dive" className="w-full border-0" style={{ minHeight: '500px', background: 'var(--bg-base)' }}
-            onLoad={(e) => { try { e.target.style.height = Math.min((e.target.contentDocument?.body?.scrollHeight || 500) + 40, 800) + 'px' } catch {} }} />
-        </div>
-      )
-    }
     return (
       <div ref={contentRef} className="p-5 overflow-y-auto max-h-[60vh]">
         {sections.deepdive ? renderMarkdown(sections.deepdive) : <p className="text-text-muted text-sm italic">No deep-dive content available.</p>}
@@ -260,10 +237,11 @@ export default function ResearchPage() {
   useEffect(() => { loadData() }, [loadData])
 
   useEffect(() => {
-    if (queue.length === 0) return
-    const interval = setInterval(loadData, 5000)
+    const hasActive = queue.length > 0 || runs.some(r => r.status === 'running' || r.status === 'queued')
+    if (!hasActive) return
+    const interval = setInterval(loadData, 3000)
     return () => clearInterval(interval)
-  }, [queue.length, loadData])
+  }, [queue.length, runs, loadData])
 
   const handleStart = async () => {
     if (!topic.trim() || loading || deepLoading) return
@@ -418,14 +396,18 @@ export default function ResearchPage() {
             )}
           </div>
 
-          {/* Queue */}
+          {/* Active */}
           {queue.length > 0 && (
             <div className="animate-slide-up">
-              <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3 font-medium">In Queue</h3>
+              <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3 font-medium">Active Research</h3>
               <div className="space-y-2">
                 {queue.map((item, i) => (
                   <div key={item.id || i} className="glass rounded-xl p-3 flex items-center gap-3">
-                    <span className="w-4 h-4 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+                    {item.status === 'running' ? (
+                      <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50" />
+                    ) : (
+                      <span className="w-4 h-4 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+                    )}
                     <div className="flex-1">
                       <span className="text-sm text-text-primary">{item.topic || item.title}</span>
                       <span className="ml-2 text-xs text-text-muted capitalize">{item.mode || 'auto'}</span>
@@ -526,8 +508,10 @@ export default function ResearchPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                          {run.status === 'running' && <span className="w-3 h-3 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
-                          }
+                          {run.status === 'queued' && <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_6px_rgba(250,204,21,0.6)]" title="Queued" />}
+                          {run.status === 'running' && <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_6px_rgba(74,222,128,0.6)]" title="Running" />}
+                          {run.status === 'completed' && <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]" title="Completed" />}
+                          {run.status === 'failed' && <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.4)]" title="Failed" />}
                           {run.report_docx_path && (
                             <a href={downloadDeepResearchDocx(run.id)} target="_blank" rel="noopener noreferrer"
                               className="p-1.5 rounded-xl hover:bg-bg-surface text-text-muted hover:text-green-400 transition-all"

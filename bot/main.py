@@ -13,6 +13,7 @@ logger = logging.getLogger("pings-bot")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 ALLOWED_USER_ID = int(os.getenv("TELEGRAM_ALLOWED_USER_ID", "0"))
 CORE_API = os.getenv("PINGS_CORE_URL", "http://pings-core:8000")
+API_KEY = os.getenv("BRAIN_SECRET_KEY", "")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
@@ -30,8 +31,11 @@ def is_allowed(message: types.Message) -> bool:
 
 async def core_request(path: str, payload: dict) -> dict:
     url = f"{CORE_API}{path}"
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
     async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(url, json=payload)
+        resp = await client.post(url, json=payload, headers=headers)
         resp.raise_for_status()
         return resp.json()
 
@@ -61,11 +65,15 @@ async def handle_photo(message: types.Message):
     file_bytes = await bot.download_file(file.file_path)
 
     files = {"file": (f"{photo.file_id}.jpg", file_bytes, "image/jpeg")}
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
-            f"{CORE_API}/api/chat/upload",
+            f"{CORE_API}/chat/upload",
             data={"session_id": sid, "caption": message.caption or ""},
             files=files,
+            headers=headers,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -83,11 +91,15 @@ async def handle_document(message: types.Message):
     file_bytes = await bot.download_file(file.file_path)
 
     files = {"file": (doc.file_name, file_bytes, doc.mime_type or "application/octet-stream")}
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
-            f"{CORE_API}/api/chat/upload",
+            f"{CORE_API}/chat/upload",
             data={"session_id": sid, "caption": message.caption or ""},
             files=files,
+            headers=headers,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -105,10 +117,10 @@ async def handle_free_text(message: types.Message):
 
     try:
         data = await core_request(
-            "/api/chat/message",
-            {"session_id": sid, "content": text},
+            "/chat",
+            {"session_id": sid, "message": text},
         )
-        reply = data.get("response", "No response from core.")
+        reply = data.get("reply", "No response from core.")
         await message.reply(reply)
     except httpx.HTTPStatusError as e:
         logger.error("Core API error: %s", e)
