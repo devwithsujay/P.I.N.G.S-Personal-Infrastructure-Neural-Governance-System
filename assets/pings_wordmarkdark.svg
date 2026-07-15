@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180">
   <defs>
     <style>
-      .astrolabe-faint{stroke:#1e293b;fill:none;stroke-width:1}.astrolabe-glow{stroke:#10b981;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px #10b981)}.astrolabe-star{fill:#34d399;filter:drop-shadow(0 0 3px #34d399)}
+      .astrolabe-faint{stroke:#1e293b;fill:none;stroke-width:1}.astrolabe-glow{stroke:#ffffff;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px #ffffff)}.astrolabe-star{fill:#ffffff;filter:drop-shadow(0 0 3px #ffffff)}
     </style>
   </defs>
   <g transform="translate(90 90)">
@@ -15,8 +15,8 @@
     <circle cx="-31" cy="31" r="3.5" class="astrolabe-star"/>
     <circle cx="-14" cy="-14" r="2.5" class="astrolabe-star"/>
     <circle cx="14" cy="14" r="2.5" class="astrolabe-star"/>
-    <path fill="#10b981" filter="drop-shadow(0px 0px 4px #10b981)" d="m0-6 5 6-5 6-5-6z"/>
+    <path fill="#ffffff" filter="drop-shadow(0px 0px 4px #ffffff)" d="m0-6 5 6-5 6-5-6z"/>
   </g>
-  <text x="230" y="95" text-anchor="middle" style="font-family:&quot;Roboto Mono&quot;,&quot;Courier New&quot;,monospace;font-size:48px;font-weight:700;fill:#10b981;letter-spacing:4px" transform="translate(170)">&gt;_P.I.N.G.S</text>
-  <text x="230" y="125" text-anchor="middle" style="font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,sans-serif;font-size:11px;font-weight:700;fill:#34d399;letter-spacing:2px;opacity:.8" transform="translate(170)">PERSONAL INFRASTRUCTURE &amp; NEURAL GOVERNANCE SYSTEM</text>
+  <text x="230" y="95" text-anchor="middle" style="font-family:&quot;Roboto Mono&quot;,&quot;Courier New&quot;,monospace;font-size:48px;font-weight:700;fill:#ffffff;letter-spacing:4px" transform="translate(170)">&gt;_P.I.N.G.S</text>
+  <text x="230" y="125" text-anchor="middle" style="font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,sans-serif;font-size:11px;font-weight:700;fill:#e2e8f0;letter-spacing:2px;opacity:.8" transform="translate(170)">PERSONAL INFRASTRUCTURE &amp; NEURAL GOVERNANCE SYSTEM</text>
 </svg>
