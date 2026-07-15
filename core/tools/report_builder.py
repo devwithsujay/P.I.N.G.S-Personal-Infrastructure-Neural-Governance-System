@@ -1,10 +1,8 @@
 import os
 import re
-import json
 import asyncio
 import logging
 from datetime import datetime
-from html.parser import HTMLParser
 
 def slugify(text: str) -> str:
     return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
@@ -29,84 +27,6 @@ async def generate_pdf(html_path: str, pdf_path: str) -> bool:
     except Exception as e:
         logger.error(f"PDF generation failed: {e}")
         return False
-
-
-def convert_html_to_telegraph_nodes(html: str) -> list:
-    class TelegraphParser(HTMLParser):
-        def __init__(self):
-            super().__init__()
-            self.nodes = []
-            self.current_node = None
-            self.tag_map = {
-                'h1': 'h3', 'h2': 'h3', 'h3': 'h4', 'h4': 'h4',
-                'p': 'p', 'b': 'b', 'strong': 'b', 'i': 'i',
-                'em': 'i', 'code': 'code', 'pre': 'pre',
-                'blockquote': 'blockquote', 'ul': 'ul', 'ol': 'ol',
-                'li': 'li', 'br': 'br', 'hr': 'hr'
-            }
-            self.skip_tags = {'div', 'span', 'section', 'article',
-                              'header', 'footer', 'nav', 'style',
-                              'script', 'table', 'thead', 'tbody',
-                              'tr', 'th', 'td'}
-
-        def handle_starttag(self, tag, attrs):
-            if tag in self.tag_map:
-                self.current_node = {'tag': self.tag_map[tag], 'children': []}
-
-        def handle_endtag(self, tag):
-            if tag in self.tag_map and self.current_node:
-                if self.current_node['children']:
-                    self.nodes.append(self.current_node)
-                self.current_node = None
-
-        def handle_data(self, data):
-            text = data.strip()
-            if not text:
-                return
-            if self.current_node:
-                self.current_node['children'].append(text)
-            else:
-                self.nodes.append({'tag': 'p', 'children': [text]})
-
-    parser = TelegraphParser()
-    parser.feed(html)
-    return parser.nodes[:300]
-
-
-async def publish_to_telegraph(title: str, html_content: str) -> str:
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            account = await client.post(
-                "https://api.telegra.ph/createAccount",
-                json={"short_name": "PINGS", "author_name": "P.I.N.G.S Research"}
-            )
-            token = account.json()["result"]["access_token"]
-
-            telegraph_content = convert_html_to_telegraph_nodes(html_content)
-
-            content_size = len(json.dumps(telegraph_content).encode('utf-8'))
-            if content_size > 60000:
-                telegraph_content = telegraph_content[:100]
-                telegraph_content.append({
-                    "tag": "p",
-                    "children": [{"tag": "i", "children": ["Report truncated for Telegraph. Full report available via link."]}]
-                })
-
-            page = await client.post(
-                "https://api.telegra.ph/createPage",
-                json={
-                    "access_token": token,
-                    "title": title[:256],
-                    "content": telegraph_content,
-                    "return_content": False
-                }
-            )
-            url = page.json()["result"]["url"]
-            logger.info(f"Published to Telegraph: {url}")
-            return url
-    except Exception as e:
-        logger.warning(f"Telegraph publish failed: {e}")
-        return ""
 
 
 def save_report_files(topic: str, run_id: int, html: str, markdown: str) -> dict:
@@ -152,36 +72,18 @@ async def send_telegram_notification(
         logger.warning("Telegram credentials not set, skipping notification")
         return
 
-    telegraph_url = ""
-    try:
-        with open(html_path) as f:
-            html_content = f.read()
-        telegraph_url = await publish_to_telegraph(topic, html_content)
-    except Exception as e:
-        logger.warning(f"Telegraph publish failed: {e}")
-
     duration_str = f"{duration_seconds // 60}m {duration_seconds % 60}s"
-    lines = [
-        "Research complete",
-        "",
-        f"Topic: {topic}",
-        f"Sources: {source_count} | Duration: {duration_str}",
-        "",
-    ]
-
-    if telegraph_url:
-        lines.append(f"Read on Telegram: {telegraph_url}")
-    lines.append(f"Full report: {html_url}")
-
-    message_text = "\n".join(lines)
+    message_text = (
+        f"Research complete\n\n"
+        f"Topic: {topic}\n"
+        f"Sources: {source_count} | Duration: {duration_str}\n\n"
+        f"Full report: {html_url}"
+    )
 
     async with httpx.AsyncClient(timeout=30) as client:
         await client.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": message_text,
-            }
+            json={"chat_id": chat_id, "text": message_text},
         )
 
     if pdf_path and os.path.exists(pdf_path):
