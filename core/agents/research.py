@@ -19,6 +19,7 @@ from core.memory.db import create_research_run, update_research_run
 from core.tools.report_builder import (
     generate_pdf, save_report_files, send_telegram_notification,
 )
+from core.tools.ntfy import send_ntfy
 
 logger = logging.getLogger("pings.agents.research")
 
@@ -687,6 +688,14 @@ async def run_research(
             duration_seconds=duration_seconds,
         )
 
+        duration_str = f"{duration_seconds // 60}m {duration_seconds % 60}s"
+        await send_ntfy(
+            title="Research Complete",
+            message=f"Topic: {topic}\nSources: {total_sources} | Duration: {duration_str}\nReport: {file_info['html_url']}",
+            priority="default",
+            tags="white_check_mark",
+        )
+
         return {
             "report": report_markdown,
             "report_html": report_html,
@@ -701,6 +710,12 @@ async def run_research(
     except SectionGenerationError as e:
         await update_research_run(run_id, status="failed", error=str(e))
         logger.error(f"Research section generation failed: {e}")
+        await send_ntfy(
+            title="Research Failed",
+            message=f"Topic: {topic}\nError: {e}",
+            priority="high",
+            tags="x",
+        )
         return {
             "report": f"Research failed: {e}",
             "report_html": markdown_to_odysseus_html(f"Research failed: {e}", topic),
@@ -709,6 +724,12 @@ async def run_research(
     except Exception as e:
         await update_research_run(run_id, status="failed", error=str(e))
         logger.error(f"Research failed: {e}")
+        await send_ntfy(
+            title="Research Failed",
+            message=f"Topic: {topic}\nError: {e}",
+            priority="high",
+            tags="x",
+        )
         error_msg = f"Research failed: {e}"
         return {
             "report": error_msg,
