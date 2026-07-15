@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import time
@@ -15,6 +16,9 @@ from core.schemas import SectionSpec, Source, SectionResult, Report
 from core.agents.opencode_engine import run_opencode_task
 from core.agents.html_renderer import markdown_to_odysseus_html
 from core.memory.db import create_research_run, update_research_run
+from core.tools.report_builder import (
+    generate_pdf, save_report_files, send_telegram_notification,
+)
 
 logger = logging.getLogger("pings.agents.research")
 
@@ -610,6 +614,8 @@ async def run_research(
     max_sources: int = 10,
     run_id: Optional[int] = None,
 ) -> Dict[str, Any]:
+    start_time = time.time()
+
     if run_id is None:
         run_id = await create_research_run(topic, mode)
     await update_research_run(run_id, status="running")
@@ -652,6 +658,8 @@ async def run_research(
         report_html = markdown_to_odysseus_html(report_markdown, topic)
 
         total_sources = sum(s.sources_found for s in report.sections)
+        duration_seconds = int(time.time() - start_time)
+
         await update_research_run(
             run_id,
             status="completed",
@@ -661,6 +669,24 @@ async def run_research(
             completed_at=datetime.utcnow().isoformat(),
         )
 
+        await update_research_run(run_id, progress="Saving report files...")
+        file_info = save_report_files(topic, run_id, report_html, report_markdown)
+
+        await update_research_run(run_id, progress="Generating PDF...")
+        pdf_path = os.path.join(file_info["report_dir"], "report.pdf")
+        await generate_pdf(file_info["html_path"], pdf_path)
+
+        await update_research_run(run_id, progress="Sending Telegram notification...")
+        await send_telegram_notification(
+            topic=topic,
+            run_id=run_id,
+            html_path=file_info["html_path"],
+            pdf_path=pdf_path,
+            html_url=file_info["html_url"],
+            source_count=total_sources,
+            duration_seconds=duration_seconds,
+        )
+
         return {
             "report": report_markdown,
             "report_html": report_html,
@@ -668,6 +694,8 @@ async def run_research(
             "metadata": report.metadata,
             "flagged_sections": report.flagged_sections,
             "total_words": report.total_words,
+            "html_url": file_info["html_url"],
+            "pdf_path": pdf_path,
         }
 
     except SectionGenerationError as e:

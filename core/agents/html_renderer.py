@@ -6,6 +6,7 @@ def markdown_to_odysseus_html(markdown_content: str, topic: str = "Research") ->
     body_lines: list[str] = []
     in_table = False
     table_rows: list[str] = []
+    section_count = 0
 
     for line in markdown_content.split("\n"):
         stripped = line.strip()
@@ -34,12 +35,17 @@ def markdown_to_odysseus_html(markdown_content: str, topic: str = "Research") ->
             in_table = False
             table_rows = []
 
-        if stripped.startswith("# "):
+        if stripped.startswith("# ") and not stripped.startswith("## "):
             body_lines.append(f"<h1>{_md(stripped[2:])}</h1>")
         elif stripped.startswith("## "):
+            section_count += 1
+            if section_count > 1:
+                body_lines.append("<div class='section-divider'></div>")
             body_lines.append(f"<h2>{_md(stripped[3:])}</h2>")
         elif stripped.startswith("### "):
             body_lines.append(f"<h3>{_md(stripped[4:])}</h3>")
+        elif stripped.startswith("#### "):
+            body_lines.append(f"<h4>{_md(stripped[5:])}</h4>")
         elif stripped.startswith("---"):
             body_lines.append("<hr>")
         elif stripped.startswith("> "):
@@ -84,13 +90,15 @@ body {{
   padding: 40px 24px 80px;
 }}
 
+/* Report typography hierarchy */
 h1 {{
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #eef0f6;
-  margin-bottom: 8px;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #a5b4fc;
+  border-bottom: 2px solid #a5b4fc;
+  padding-bottom: 0.5rem;
+  margin: 2.5rem 0 1rem;
+  line-height: 1.2;
 }}
 
 h1 + .subtitle {{
@@ -100,26 +108,36 @@ h1 + .subtitle {{
 }}
 
 h2 {{
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #a5b4fc;
-  margin: 36px 0 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(165, 180, 252, 0.12);
+  color: #eef0f6;
+  border-left: 3px solid #a5b4fc;
+  padding-left: 0.75rem;
+  margin: 2rem 0 0.75rem;
+  line-height: 1.3;
 }}
 
 h3 {{
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 500;
   color: #c4b5fd;
-  margin: 24px 0 10px;
+  margin: 1.5rem 0 0.5rem;
+}}
+
+h4 {{
+  font-size: 1rem;
+  font-weight: 500;
+  color: #8890b0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.25rem 0 0.4rem;
 }}
 
 p {{
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: #b0b6cc;
-  margin-bottom: 14px;
-  line-height: 1.8;
+  margin-bottom: 0.85rem;
 }}
 
 p.italic {{
@@ -145,16 +163,23 @@ hr {{
   margin: 28px 0;
 }}
 
+.section-divider {{
+  height: 1px;
+  background: rgba(165, 180, 252, 0.15);
+  margin: 2rem 0;
+  opacity: 0.4;
+}}
+
 ul, ol {{
-  padding-left: 22px;
-  margin-bottom: 14px;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
 }}
 
 li {{
-  font-size: 0.88rem;
-  color: #b0b6cc;
-  margin-bottom: 10px;
+  font-size: 0.95rem;
   line-height: 1.7;
+  color: #b0b6cc;
+  margin-bottom: 0.35rem;
 }}
 
 li.numbered {{
@@ -167,12 +192,28 @@ strong {{
 }}
 
 code {{
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
   background: rgba(129, 140, 248, 0.1);
   color: #c4b5fd;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 0.82rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}}
+
+pre {{
+  background: rgba(129, 140, 248, 0.08);
+  border: 1px solid rgba(165, 180, 252, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}}
+
+pre code {{
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }}
 
 a {{
@@ -189,29 +230,30 @@ a:hover {{
 table {{
   width: 100%;
   border-collapse: collapse;
-  margin: 18px 0;
-  font-size: 0.82rem;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(165, 180, 252, 0.1);
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
 }}
 
 thead th {{
   background: rgba(99, 102, 241, 0.12);
-  color: #c4b5fd;
-  font-weight: 600;
+  color: #a5b4fc;
+  font-weight: 500;
   text-align: left;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(165, 180, 252, 0.1);
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(165, 180, 252, 0.1);
   white-space: nowrap;
 }}
 
 tbody td {{
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(165, 180, 252, 0.05);
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(165, 180, 252, 0.05);
   color: #b0b6cc;
   vertical-align: top;
   line-height: 1.5;
+}}
+
+tbody tr:nth-child(even) td {{
+  background: rgba(99, 102, 241, 0.03);
 }}
 
 tbody tr:last-child td {{
@@ -228,6 +270,28 @@ tbody tr:hover {{
 
 .prose li strong {{
   color: #eef0f6;
+}}
+
+/* Source badges at bottom */
+.source-item {{
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(165, 180, 252, 0.05);
+}}
+
+.source-number {{
+  color: #a5b4fc;
+  font-weight: 500;
+  font-size: 0.85rem;
+  min-width: 2rem;
+}}
+
+.source-url {{
+  color: #8890b0;
+  font-size: 0.85rem;
+  word-break: break-all;
 }}
 </style>
 </head>
