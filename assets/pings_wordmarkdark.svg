@@ -4,7 +4,6 @@
       .astrolabe-faint{stroke:#1e293b;fill:none;stroke-width:1}.astrolabe-glow{stroke:#10b981;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px #10b981)}.astrolabe-star{fill:#34d399;filter:drop-shadow(0 0 3px #34d399)}
     </style>
   </defs>
-  <rect width="100%" height="100%" rx="12" style="fill:#050b14"/>
   <g transform="translate(90 90)">
     <circle r="45" class="astrolabe-faint"/>
     <circle r="35" class="astrolabe-faint" stroke-dasharray="1 3"/>
