@@ -12,7 +12,7 @@ const navItems = [
   { path: '/calendar', icon: CalendarIcon, label: 'Calendar', shortcut: '4' },
   { path: '/skills', icon: SkillsIcon, label: 'Skills', shortcut: '5' },
   { path: '/homelab', icon: HomeLabIcon, label: 'HomeLab', shortcut: '6' },
-
+  { path: '/automations', icon: AutomationsIcon, label: 'Automations', shortcut: '7' },
   { path: '/history', icon: HistoryIcon, label: 'History', shortcut: '8' },
 ]
 
@@ -204,6 +204,13 @@ function HomeLabIcon({ className }) {
   )
 }
 
+function AutomationsIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+}
 
 function HistoryIcon({ className }) {
   return (
