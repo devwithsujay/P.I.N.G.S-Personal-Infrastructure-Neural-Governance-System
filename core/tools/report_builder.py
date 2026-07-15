@@ -5,7 +5,9 @@ import asyncio
 import logging
 from datetime import datetime
 from html.parser import HTMLParser
-from urllib.parse import slugify
+
+def slugify(text: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
 
 import httpx
 
