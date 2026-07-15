@@ -33,12 +33,37 @@ engines:
   - name: google
     engine: google
     shortcut: g
-    disabled: false
+    disabled: true
 
   - name: duckduckgo
     engine: duckduckgo
     shortcut: ddg
     disabled: false
+    weight: 1.0
+
+  - name: startpage
+    engine: startpage
+    shortcut: sp
+    disabled: false
+    weight: 1.0
+
+  - name: mojeek
+    engine: mojeek
+    shortcut: mj
+    disabled: false
+    weight: 0.8
+
+  - name: bing
+    engine: bing
+    shortcut: bi
+    disabled: false
+    weight: 0.8
+
+  - name: brave
+    engine: brave
+    shortcut: br
+    disabled: false
+    weight: 0.3
 
   - name: wikipedia
     engine: wikipedia

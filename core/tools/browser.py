@@ -12,6 +12,8 @@ from core.config import settings
 
 logger = logging.getLogger("pings.tools.browser")
 
+_search_sem = asyncio.Semaphore(2)
+
 
 @dataclass
 class SearchResult:
@@ -73,24 +75,27 @@ async def web_search(query: str, engine: str = "auto") -> str:
 
 
 async def _search_searxng(query: str) -> str:
-    url = f"{settings.SEARXNG_URL}/search"
-    params = {"q": query, "format": "json", "categories": "general"}
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.get(url, params=params)
-        resp.raise_for_status()
-        data = resp.json()
+    async with _search_sem:
+        url = f"{settings.SEARXNG_URL}/search"
+        params = {"q": query, "format": "json", "categories": "general"}
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(url, params=params)
+            resp.raise_for_status()
+            data = resp.json()
 
-    results = data.get("results", [])
-    if not results:
-        return ""
+        await asyncio.sleep(0.5)
 
-    lines = [f"SearXNG results for: {query}\n"]
-    for i, r in enumerate(results[:8], 1):
-        title = r.get("title", "No title")
-        snippet = r.get("content", "")
-        link = r.get("url", "")
-        lines.append(f"{i}. **{title}**\n   {link}\n   {snippet[:200]}\n")
-    return "\n".join(lines)
+        results = data.get("results", [])
+        if not results:
+            return ""
+
+        lines = [f"SearXNG results for: {query}\n"]
+        for i, r in enumerate(results[:8], 1):
+            title = r.get("title", "No title")
+            snippet = r.get("content", "")
+            link = r.get("url", "")
+            lines.append(f"{i}. **{title}**\n   {link}\n   {snippet[:200]}\n")
+        return "\n".join(lines)
 
 
 async def _search_serpapi(query: str) -> str:
@@ -189,23 +194,45 @@ async def fetch_url(url: str, timeout: int = 20) -> str:
 async def search_structured(query: str) -> List[SearchResult]:
     results: List[SearchResult] = []
 
+    async with _search_sem:
+        for attempt in range(2):
+            try:
+                url = f"{settings.SEARXNG_URL}/search"
+                params = {"q": query, "format": "json", "categories": "general"}
+                async with httpx.AsyncClient(timeout=15) as client:
+                    resp = await client.get(url, params=params)
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                await asyncio.sleep(0.5)
+
+                for r in data.get("results", [])[:10]:
+                    results.append(SearchResult(
+                        url=r.get("url", ""),
+                        title=r.get("title", ""),
+                        snippet=r.get("content", ""),
+                    ))
+                if results:
+                    return results
+                logger.warning(f"SearXNG empty results for query (attempt {attempt+1}): {query[:80]}")
+            except Exception as e:
+                logger.warning(f"SearXNG search failed (attempt {attempt+1}): {e}")
+
+            if attempt == 0:
+                await asyncio.sleep(2)
+
+    logger.error(f"SearXNG no results after retries for: {query[:80]}")
     try:
-        url = f"{settings.SEARXNG_URL}/search"
-        params = {"q": query, "format": "json", "categories": "general"}
-        async with httpx.AsyncClient(timeout=15) as client:
-            resp = await client.get(url, params=params)
-            resp.raise_for_status()
-            data = resp.json()
-        for r in data.get("results", [])[:10]:
-            results.append(SearchResult(
-                url=r.get("url", ""),
-                title=r.get("title", ""),
-                snippet=r.get("content", ""),
-            ))
-        if results:
-            return results
-    except Exception as e:
-        logger.warning(f"SearXNG search failed: {e}")
+        from core.tools.ntfy import send_ntfy
+        await send_ntfy(
+            title="SearXNG Search Failed",
+            message=f"No results after retries for: {query[:100]}",
+            priority="high",
+            tags="warning",
+        )
+    except Exception:
+        pass
+    return results
 
     try:
         api_key = settings.SERPAPI_KEY
