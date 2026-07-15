@@ -28,6 +28,8 @@ from core.memory.db import (
     create_research_run, update_research_run, get_research_runs, get_research_run,
     delete_research_run,
     create_calendar_task, get_calendar_tasks, update_calendar_task, delete_calendar_task,
+    create_automation, get_automations, get_automation, update_automation, delete_automation,
+    create_briefing_run, get_briefing_runs, get_briefing_run,
 )
 from core.memory.persistent import add_knowledge, search_knowledge, get_memory_stats
 from core.memory.seed import seed_chroma_on_startup
@@ -115,6 +117,13 @@ async def startup_event() -> None:
 
     watch_persona_files(_reload_persona)
     logger.info("Persona file watcher started")
+
+    try:
+        from core.services.scheduler import start_scheduler
+        await start_scheduler()
+        logger.info("Scheduler started")
+    except Exception as e:
+        logger.warning(f"Scheduler start failed (non-fatal): {e}")
 
 
 
@@ -802,12 +811,75 @@ async def websocket_terminal(websocket: WebSocket):
         pass
     except Exception:
         pass
-    finally:
-        stdout_task.cancel()
-        stderr_task.cancel()
-        try:
-            proc.stdin.close()
-            proc.terminate()
-            await proc.wait()
-        except Exception:
-            pass
+
+
+# ── Automations ─────────────────────────────────────────────────────────────
+@app.post("/automations")
+async def create_automation_endpoint(
+    name: str = Form(...),
+    instructions: str = Form(...),
+    schedule_time: str = Form(...),
+    timezone: str = Form("UTC"),
+) -> Dict[str, Any]:
+    automation_id = await create_automation(name, instructions, schedule_time, timezone)
+    automation = await get_automation(automation_id)
+    from core.services.scheduler import add_job
+    add_job(automation)
+    return automation
+
+
+@app.get("/automations")
+async def list_automations() -> List[Dict[str, Any]]:
+    return await get_automations()
+
+
+@app.patch("/automations/{automation_id}")
+async def update_automation_endpoint(
+    automation_id: int,
+    name: Optional[str] = Form(None),
+    instructions: Optional[str] = Form(None),
+    schedule_time: Optional[str] = Form(None),
+    timezone: Optional[str] = Form(None),
+    active: Optional[bool] = Form(None),
+) -> Dict[str, Any]:
+    kwargs = {}
+    if name is not None:
+        kwargs["name"] = name
+    if instructions is not None:
+        kwargs["instructions"] = instructions
+    if schedule_time is not None:
+        kwargs["schedule_time"] = schedule_time
+    if timezone is not None:
+        kwargs["timezone"] = timezone
+    if active is not None:
+        kwargs["active"] = int(active)
+    await update_automation(automation_id, **kwargs)
+    automation = await get_automation(automation_id)
+    from core.services.scheduler import reschedule_job
+    reschedule_job(automation)
+    return automation
+
+
+@app.delete("/automations/{automation_id}")
+async def delete_automation_endpoint(automation_id: int) -> Dict[str, str]:
+    from core.services.scheduler import remove_job
+    remove_job(automation_id)
+    await delete_automation(automation_id)
+    return {"status": "deleted"}
+
+
+@app.get("/automations/{automation_id}/runs")
+async def list_briefing_runs(automation_id: int) -> List[Dict[str, Any]]:
+    return await get_briefing_runs(automation_id)
+
+
+@app.get("/automations/{automation_id}/runs/{run_id}/pdf")
+async def get_briefing_pdf(automation_id: int, run_id: int):
+    run = await get_briefing_run(run_id)
+    if not run or not run.get("pdf_path"):
+        raise HTTPException(status_code=404, detail="PDF not found")
+    import os
+    if not os.path.exists(run["pdf_path"]):
+        raise HTTPException(status_code=404, detail="PDF file missing")
+    from fastapi.responses import FileResponse
+    return FileResponse(run["pdf_path"], media_type="application/pdf", filename=f"briefing-{run_id}.pdf")

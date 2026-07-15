@@ -121,6 +121,26 @@ async def init_db() -> None:
                 CREATE INDEX IF NOT EXISTS idx_memory_session ON memory_entries(session_id);
                 CREATE INDEX IF NOT EXISTS idx_agent_runs_agent ON agent_runs(agent_id);
                 CREATE INDEX IF NOT EXISTS idx_research_status ON research_runs(status);
+                CREATE TABLE IF NOT EXISTS automations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    instructions TEXT NOT NULL,
+                    schedule_time TEXT NOT NULL,
+                    timezone TEXT DEFAULT 'UTC',
+                    active INTEGER DEFAULT 1,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    last_run_at TEXT DEFAULT NULL
+                );
+                CREATE TABLE IF NOT EXISTS briefing_runs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    automation_id INTEGER NOT NULL,
+                    status TEXT DEFAULT 'pending',
+                    started_at TEXT DEFAULT NULL,
+                    completed_at TEXT DEFAULT NULL,
+                    pdf_path TEXT DEFAULT NULL,
+                    error_message TEXT DEFAULT NULL,
+                    FOREIGN KEY (automation_id) REFERENCES automations(id) ON DELETE CASCADE
+                );
             """)
             await db.commit()
             for migration in [
@@ -351,3 +371,44 @@ async def get_next_queued_run() -> Optional[Dict[str, Any]]:
 
 async def delete_research_run(run_id: int) -> bool:
     return await _delete("research_runs", run_id)
+
+
+# ── Automations ────────────────────────────────────────────────────────────
+async def create_automation(name: str, instructions: str, schedule_time: str, timezone: str = "UTC") -> int:
+    return await _insert("automations", name=name, instructions=instructions, schedule_time=schedule_time, timezone=timezone)
+
+
+async def get_automations(active_only: bool = False) -> List[Dict[str, Any]]:
+    if active_only:
+        return await _fetch("SELECT * FROM automations WHERE active = 1 ORDER BY created_at DESC")
+    return await _fetch("SELECT * FROM automations ORDER BY created_at DESC")
+
+
+async def get_automation(automation_id: int) -> Optional[Dict[str, Any]]:
+    return await _fetch_one("SELECT * FROM automations WHERE id = ?", (automation_id,))
+
+
+async def update_automation(automation_id: int, **kwargs: Any) -> bool:
+    return await _update("automations", automation_id, {"name", "instructions", "schedule_time", "timezone", "active", "last_run_at"}, **kwargs)
+
+
+async def delete_automation(automation_id: int) -> bool:
+    await _delete("briefing_runs", automation_id)
+    return await _delete("automations", automation_id)
+
+
+# ── Briefing Runs ──────────────────────────────────────────────────────────
+async def create_briefing_run(automation_id: int) -> int:
+    return await _insert("briefing_runs", automation_id=automation_id, status="pending", started_at=datetime.utcnow().isoformat())
+
+
+async def update_briefing_run(run_id: int, **kwargs: Any) -> bool:
+    return await _update("briefing_runs", run_id, {"status", "completed_at", "pdf_path", "error_message"}, **kwargs)
+
+
+async def get_briefing_runs(automation_id: int) -> List[Dict[str, Any]]:
+    return await _fetch("SELECT * FROM briefing_runs WHERE automation_id = ? ORDER BY started_at DESC", (automation_id,))
+
+
+async def get_briefing_run(run_id: int) -> Optional[Dict[str, Any]]:
+    return await _fetch_one("SELECT * FROM briefing_runs WHERE id = ?", (run_id,))
