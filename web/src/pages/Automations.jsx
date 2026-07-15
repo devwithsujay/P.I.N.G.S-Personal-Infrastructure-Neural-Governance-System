@@ -82,6 +82,16 @@ export default function Automations() {
     }
   }
 
+  const handleRunNow = async (id) => {
+    try {
+      await axios.post(`${CORE_API}/automations/${id}/run`)
+      toast.success('Briefing triggered')
+      setTimeout(() => fetchRuns(id), 2000)
+    } catch (e) {
+      toast.error('Failed to trigger briefing')
+    }
+  }
+
   const handleDelete = async (id) => {
     if (!confirm('Delete this automation?')) return
     try {
@@ -207,6 +217,9 @@ export default function Automations() {
               <div className="flex items-center gap-2 ml-4">
                 <Button size="sm" onPress={() => toggleExpand(a.id)} className="rounded-lg text-xs" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
                   Runs
+                </Button>
+                <Button size="sm" onPress={() => handleRunNow(a.id)} className="rounded-lg text-xs" style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>
+                  Run Now
                 </Button>
                 <Button size="sm" onPress={() => handleToggle(a.id, a.active)} className="rounded-lg text-xs" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
                   {a.active ? 'Pause' : 'Resume'}

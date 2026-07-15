@@ -7,6 +7,7 @@ from core.memory.db import (
     get_automation, create_briefing_run, update_briefing_run,
     update_automation,
 )
+from core.schemas import SectionResult, Source
 from core.agents.research import decompose, gather_sources, write_all_sections, assemble_report, _render_report_markdown
 from core.agents.html_renderer import markdown_to_odysseus_html
 from core.tools.report_builder import generate_pdf, save_report_files
@@ -40,16 +41,13 @@ async def generate_briefing(automation_id: int) -> Dict[str, Any]:
         section_results = []
         for i, section in enumerate(sections):
             sources = await gather_sources(section)
-            section_results.append({
-                "section": section,
-                "sources": sources,
-                "sources_found": len(sources),
-            })
+            section_results.append(SectionResult(
+                section=section,
+                sources=sources,
+                sources_found=len(sources),
+            ))
 
         written_sections = await write_all_sections(section_results)
-
-        for r in written_sections:
-            r.custom_prompt_suffix = BRIEFING_INSTRUCTION
 
         report = await assemble_report(topic, written_sections)
         report_markdown = _render_report_markdown(report, topic)

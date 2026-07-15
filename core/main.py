@@ -119,11 +119,13 @@ async def startup_event() -> None:
     logger.info("Persona file watcher started")
 
     try:
+        print("DEBUG: Starting scheduler...")
         from core.services.scheduler import start_scheduler
         await start_scheduler()
-        logger.info("Scheduler started")
+        print("DEBUG: Scheduler started")
     except Exception as e:
-        logger.warning(f"Scheduler start failed (non-fatal): {e}")
+        print(f"DEBUG: Scheduler failed: {e}")
+        logger.error(f"Scheduler start failed: {e}", exc_info=True)
 
 
 
@@ -883,3 +885,13 @@ async def get_briefing_pdf(automation_id: int, run_id: int):
         raise HTTPException(status_code=404, detail="PDF file missing")
     from fastapi.responses import FileResponse
     return FileResponse(run["pdf_path"], media_type="application/pdf", filename=f"briefing-{run_id}.pdf")
+
+
+@app.post("/automations/{automation_id}/run")
+async def trigger_briefing(automation_id: int) -> Dict[str, Any]:
+    automation = await get_automation(automation_id)
+    if not automation:
+        raise HTTPException(status_code=404, detail="Automation not found")
+    from core.agents.briefing import generate_briefing
+    asyncio.create_task(generate_briefing(automation_id))
+    return {"status": "triggered", "automation_id": automation_id}
