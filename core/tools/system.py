@@ -39,6 +39,10 @@ async def control_container(action: str, name: str) -> str:
         cmd = f"docker stop {name}"
     elif action == "restart":
         cmd = f"docker restart {name}"
+    elif action == "pause":
+        cmd = f"docker pause {name}"
+    elif action == "unpause":
+        cmd = f"docker unpause {name}"
     elif action == "logs":
         cmd = f"docker logs --tail 50 {name}"
     elif action == "status":

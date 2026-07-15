@@ -61,5 +61,13 @@ class Settings(BaseSettings):
 
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
+    MIN_SOURCES_PER_SUBTOPIC: int = 15
+    MIN_WORDS_PER_SECTION: int = 500
+    MIN_WORDS_TOTAL: int = 8000
+    MAX_SEARCH_REFORMULATIONS: int = 6
+    MAX_SECTION_REWRITE_ATTEMPTS: int = 3
+    FETCH_TIMEOUT_SECONDS: int = 15
+    FETCH_CONCURRENCY: int = 5
+
 
 settings = Settings()

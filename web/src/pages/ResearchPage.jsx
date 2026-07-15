@@ -214,6 +214,7 @@ export default function ResearchPage() {
   const [loading, setLoading] = useState(false)
   const [deepLoading, setDeepLoading] = useState(false)
   const [discussMsg, setDiscussMsg] = useState('')
+  const [discussions, setDiscussions] = useState({})
   const [models, setModels] = useState([])
   const [reportTab, setReportTab] = useState('summary')
   const [deepSections, setDeepSections] = useState(12)
@@ -266,13 +267,25 @@ export default function ResearchPage() {
 
   const handleDiscuss = async (runId) => {
     if (!discussMsg.trim()) return
+    const userMsg = discussMsg.trim()
+    setDiscussMsg('')
+    setDiscussions(prev => ({
+      ...prev,
+      [runId]: [...(prev[runId] || []), { role: 'user', content: userMsg }]
+    }))
     try {
-      await discussResearch({ run_id: runId, message: discussMsg.trim() })
-      setDiscussMsg('')
-      const updated = await getResearchRun(runId)
-      setSelectedRun(updated)
-      toast.success('Discussion added')
-    } catch { toast.error('Failed to add discussion') }
+      const res = await discussResearch({ run_id: runId, message: userMsg })
+      const reply = res?.response || 'No response'
+      setDiscussions(prev => ({
+        ...prev,
+        [runId]: [...(prev[runId] || []), { role: 'assistant', content: reply }]
+      }))
+    } catch {
+      setDiscussions(prev => ({
+        ...prev,
+        [runId]: [...(prev[runId] || []), { role: 'assistant', content: 'Failed to get response' }]
+      }))
+    }
   }
 
   const handleDelete = async (id) => {
@@ -455,6 +468,22 @@ export default function ResearchPage() {
               </div>
 
               <ReportView report={selectedRun.report} reportHtml={selectedRun.report_html} activeTab={reportTab} />
+
+              {discussions[selectedRun.id] && discussions[selectedRun.id].length > 0 && (
+                <div className="px-5 py-3 border-t space-y-3" style={{ borderColor: 'var(--border-subtle)' }}>
+                  {discussions[selectedRun.id].map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-accent/20 text-text-primary'
+                          : 'bg-bg-surface text-text-primary'
+                      }`}>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="px-5 pb-4 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                 <div className="flex gap-2">

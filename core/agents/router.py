@@ -36,6 +36,15 @@ INTENT_PATTERNS: Dict[str, List[str]] = {
         r"who\s+is", r"how\s+to", r"browse",
         r"what\s+is", r"what\s+are", r"what's",
     ],
+    "host": [
+        r"my\s+ip", r"ip\s+address", r"create\s+(a\s+)?folder",
+        r"make\s+(a\s+)?folder", r"create\s+(a\s+)?directory",
+        r"delete\s+(the\s+)?(folder|file|directory|path)",
+        r"remove\s+(the\s+)?(folder|file|directory|path)",
+        r"list\s+(the\s+)?(contents?\s+of|folder|directory)",
+        r"run\s+command", r"execute\s+command",
+        r"what\s+is\s+my", r"whats\s+my",
+    ],
 }
 
 AGENT_ROLES: Dict[str, Dict[str, Any]] = {
@@ -154,6 +163,46 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
 
     from core.agents.opencode_engine import run_opencode_task, _parse_model
 
+    if intent == "host":
+        from core.tools.host import parse_host_action, exec_command, get_ip, create_folder, delete_path, list_directory
+        action = parse_host_action(clean_message)
+        if action == "get_ip":
+            response = await get_ip()
+        elif action and action.startswith("create_folder:"):
+            path = action.split(":", 1)[1]
+            response = await create_folder(path)
+        elif action and action.startswith("delete_path:"):
+            path = action.split(":", 1)[1]
+            response = await delete_path(path)
+        elif action and action.startswith("list_directory:"):
+            path = action.split(":", 1)[1]
+            response = await list_directory(path)
+        elif action and action.startswith("exec:"):
+            cmd = action.split(":", 1)[1]
+            response = await exec_command(cmd)
+        else:
+            response = await exec_command(clean_message)
+        return response, intent
+
+    if intent == "homelab":
+        from core.agents.homelab import handle_homelab
+        response = await handle_homelab(clean_message, system_prompt)
+        return response, intent
+
+    if intent == "research":
+        import asyncio
+        from core.memory.db import create_research_run
+        from core.agents.research import run_research
+        topic = clean_message
+        for prefix in ["research on ", "research about ", "research ", "deep research on ", "deep research about ", "deep research ", "investigate ", "analyze ", "study "]:
+            if clean_message.lower().startswith(prefix):
+                topic = clean_message[len(prefix):]
+                break
+        run_id = await create_research_run(topic, "deep")
+        asyncio.create_task(run_research(topic, "deep", run_id=run_id))
+        response = f"Research started on: {topic}\nRun ID: {run_id}\nThis will take ~15-20 minutes. I'll send the report when it's done."
+        return response, intent
+
     provider_id, model_id = _parse_model(model) if model else (None, None)
     using_ollama = provider_id == "ollama"
 
@@ -162,10 +211,7 @@ async def dispatch(message: str, session_id: str, system_prompt: str, persona: O
         response = await run_opencode_task(clean_message, system_prompt, model=model, extra_parts=extra_parts)
         return response, "qa"
 
-    if intent == "homelab":
-        from core.agents.homelab import handle_homelab
-        response = await handle_homelab(clean_message, system_prompt)
-    elif intent == "tasks":
+    if intent == "tasks":
         from core.agents.tasks import handle_tasks
         response = await handle_tasks(clean_message, system_prompt)
     elif intent == "browse":

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -140,3 +140,38 @@ class ModelInfo(BaseModel):
 class ModelsResponse(BaseModel):
     models: List[ModelInfo] = Field(default_factory=list)
     default: str = ""
+
+
+class SectionSpec(BaseModel):
+    title: str
+    subtopic_query: str
+    depth_tier: Literal["broad", "deep", "synthesis"]
+    order: int
+
+
+class Source(BaseModel):
+    url: str
+    title: str
+    full_text: Optional[str] = None
+    fetched: bool = False
+    word_count: int = 0
+
+
+class SectionResult(BaseModel):
+    section: SectionSpec
+    text: str = ""
+    word_count: int = 0
+    attempts: int = 0
+    under_minimum: bool = False
+    call_failed: bool = False
+    sources: List[Source] = Field(default_factory=list)
+    sources_found: int = 0
+
+
+class Report(BaseModel):
+    topic: str
+    sections: List[SectionResult] = Field(default_factory=list)
+    total_words: int = 0
+    flagged_sections: List[str] = Field(default_factory=list)
+    flagged_contradictions: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)

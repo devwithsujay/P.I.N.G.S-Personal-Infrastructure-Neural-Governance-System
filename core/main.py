@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, Request
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -444,6 +444,7 @@ async def homelab_status() -> HomelabStatus:
                         name=name,
                         status=status_str,
                         image=parts[2].strip(),
+                        ports=parts[3].strip() if len(parts) > 3 else "",
                     ))
 
     return HomelabStatus(
@@ -485,7 +486,7 @@ async def homelab_containers() -> Dict[str, str]:
 
 @app.post("/homelab/containers/{action}/{name}")
 async def homelab_container_action(action: str, name: str) -> Dict[str, str]:
-    if action not in ("start", "stop", "restart", "logs", "status"):
+    if action not in ("start", "stop", "restart", "pause", "unpause", "logs", "status"):
         raise HTTPException(status_code=400, detail="Invalid action")
     result = await control_container(action, name)
     return {"output": result}
@@ -647,8 +648,8 @@ async def discuss_research(request: Dict[str, Any]) -> Dict[str, Any]:
     topic = run.get("topic", "")
     system_prompt = f"You are a research assistant discussing the topic: {topic}"
     response = await run_opencode_task(
-        prompt=f"Based on this research on '{topic}', answer: {message}",
-        system_prompt=system_prompt,
+        task=f"Based on this research on '{topic}', answer: {message}",
+        system_context=system_prompt,
         timeout=90,
     )
     return {"response": response}
@@ -691,7 +692,7 @@ async def list_models() -> ModelsResponse:
         ModelInfo(id="opencode/nemotron-3-ultra-free", name="Nemotron 3 Ultra Free", provider="zen", context_window=32768),
         ModelInfo(id="opencode/big-pickle", name="Big Pickle", provider="zen", context_window=32768),
         ModelInfo(id="opencode/north-mini-code-free", name="North Mini Code Free", provider="zen", context_window=32768),
-        ModelInfo(id="ollama/qwen3:1.7b", name="Qwen3 1.7B (Local)", provider="ollama", context_window=32768),
+        ModelInfo(id="ollama/gemma3:1b", name="Gemma3 1B (Local)", provider="ollama", context_window=32768),
     ]
     return ModelsResponse(models=models, default=settings.DEFAULT_ZEN_MODEL)
 
@@ -755,3 +756,58 @@ async def root() -> Dict[str, str]:
         "status": "running",
         "docs": "/docs",
     }
+
+
+@app.websocket("/ws/terminal")
+async def websocket_terminal(websocket: WebSocket):
+    await websocket.accept()
+    proc = await asyncio.create_subprocess_exec(
+        "/usr/bin/stdbuf", "-oL", "-eL", "/bin/bash", "--login",
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        env={**os.environ, "TERM": "xterm-256color", "SHELL": "/bin/bash"},
+    )
+
+    async def read_stdout():
+        try:
+            while True:
+                data = await proc.stdout.read(4096)
+                if not data:
+                    break
+                await websocket.send_bytes(data)
+        except Exception:
+            pass
+
+    async def read_stderr():
+        try:
+            while True:
+                data = await proc.stderr.read(4096)
+                if not data:
+                    break
+                await websocket.send_bytes(data)
+        except Exception:
+            pass
+
+    stdout_task = asyncio.create_task(read_stdout())
+    stderr_task = asyncio.create_task(read_stderr())
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if proc.stdin and not proc.stdin.is_closing():
+                proc.stdin.write(data.encode())
+                await proc.stdin.drain()
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        stdout_task.cancel()
+        stderr_task.cancel()
+        try:
+            proc.stdin.close()
+            proc.terminate()
+            await proc.wait()
+        except Exception:
+            pass

@@ -1,5 +1,7 @@
 import os
+import re
 import logging
+import asyncio
 import httpx
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
@@ -18,6 +20,18 @@ API_KEY = os.getenv("BRAIN_SECRET_KEY", "")
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
+RESEARCH_POLL_INTERVAL = 15
+RESEARCH_MAX_WAIT = 1800
+
+RESEARCH_PATTERNS = [
+    r"^research\s+(on|about)\s+(.+)",
+    r"^deep\s+research\s+(on|about)\s+(.+)",
+    r"^research\s+(.+)",
+    r"^investigate\s+(.+)",
+    r"^analyze\s+(.+)",
+    r"^study\s+(.+)",
+]
+
 
 def get_session_id(message: types.Message) -> str:
     return str(message.from_user.id)
@@ -27,6 +41,14 @@ def is_allowed(message: types.Message) -> bool:
     if ALLOWED_USER_ID == 0:
         return True
     return message.from_user.id == ALLOWED_USER_ID
+
+
+def extract_research_topic(text: str) -> str:
+    for pattern in RESEARCH_PATTERNS:
+        m = re.match(pattern, text, re.IGNORECASE)
+        if m:
+            return m.group(m.lastindex).strip()
+    return text.strip()
 
 
 async def core_request(path: str, payload: dict) -> dict:
@@ -40,6 +62,76 @@ async def core_request(path: str, payload: dict) -> dict:
         return resp.json()
 
 
+async def core_get(path: str) -> dict:
+    url = f"{CORE_API}{path}"
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
+
+
+async def poll_research_and_send(chat_id: int, run_id: int, topic: str):
+    try:
+        elapsed = 0
+        last_progress = ""
+        while elapsed < RESEARCH_MAX_WAIT:
+            await asyncio.sleep(RESEARCH_POLL_INTERVAL)
+            elapsed += RESEARCH_POLL_INTERVAL
+
+            try:
+                run_data = await core_get(f"/research/runs/{run_id}")
+            except Exception as e:
+                logger.warning(f"Poll failed for run {run_id}: {e}")
+                continue
+
+            status = run_data.get("status", "")
+            progress = run_data.get("progress", "")
+
+            if progress and progress != last_progress:
+                try:
+                    await bot.send_message(chat_id, f"Research progress: {progress}")
+                except Exception:
+                    pass
+                last_progress = progress
+
+            if status == "completed":
+                report = run_data.get("report", "")
+                if report:
+                    report_for_telegram = report.replace("---", "\n————————\n")
+                    chunk_size = 4000
+                    chunks = [report_for_telegram[i:i+chunk_size] for i in range(0, len(report_for_telegram), chunk_size)]
+                    for i, chunk in enumerate(chunks):
+                        try:
+                            await bot.send_message(chat_id, chunk)
+                        except Exception as e:
+                            logger.error(f"Failed to send report chunk {i+1}: {e}")
+                    try:
+                        html_url = f"{CORE_API}/research/{run_id}/report.html"
+                        await bot.send_message(chat_id, f"HTML report: {html_url}")
+                    except Exception as e:
+                        logger.error(f"Failed to send HTML link: {e}")
+                else:
+                    await bot.send_message(chat_id, "Research completed but no report was generated.")
+                return
+
+            if status == "failed":
+                error = run_data.get("error", "Unknown error")
+                await bot.send_message(chat_id, f"Research failed: {error}")
+                return
+
+        await bot.send_message(chat_id, f"Research timed out after {RESEARCH_MAX_WAIT//60} minutes. Check the web UI for status.")
+
+    except Exception as e:
+        logger.error(f"Poll task error: {e}")
+        try:
+            await bot.send_message(chat_id, f"Error monitoring research: {e}")
+        except Exception:
+            pass
+
+
 # ── /start ──────────────────────────────────────────────────────────────────
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -49,9 +141,50 @@ async def cmd_start(message: types.Message):
     await message.reply(
         "<b>P.I.N.G.S Core v2</b>\n"
         "Personal Infrastructure & Neural Governance System\n\n"
-        "Send any message to chat, or attach a photo/document."
+        "Send any message to chat, or attach a photo/document.\n"
+        "Use 'research about &lt;topic&gt;' for deep research."
     )
 
+
+# ── /history ─────────────────────────────────────────────────────────────────
+@dp.message(Command("history"))
+async def cmd_history(message: types.Message):
+    if not is_allowed(message):
+        await message.reply("Access denied.")
+        return
+    sid = get_session_id(message)
+    try:
+        data = await core_get(f"/sessions/{sid}")
+        if not data:
+            await message.reply("No history found.")
+            return
+        lines = []
+        for entry in data[-20:]:
+            role = entry.get("role", "?")
+            content = entry.get("content", "")[:200]
+            lines.append(f"<b>{role}</b>: {content}")
+        await message.reply("\n\n".join(lines))
+    except Exception as e:
+        await message.reply(f"Failed to fetch history: {e}")
+
+
+# ── /clear ──────────────────────────────────────────────────────────────────
+@dp.message(Command("clear"))
+async def cmd_clear(message: types.Message):
+    if not is_allowed(message):
+        await message.reply("Access denied.")
+        return
+    sid = get_session_id(message)
+    try:
+        headers = {}
+        if API_KEY:
+            headers["X-API-Key"] = API_KEY
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.delete(f"{CORE_API}/history/{sid}", headers=headers)
+            resp.raise_for_status()
+        await message.reply("History cleared.")
+    except Exception as e:
+        await message.reply(f"Failed to clear history: {e}")
 
 
 # ── Photo / Document uploads ────────────────────────────────────────────────
@@ -115,6 +248,8 @@ async def handle_free_text(message: types.Message):
     sid = get_session_id(message)
     text = message.text.strip()
 
+    is_research = any(re.match(p, text, re.IGNORECASE) for p in RESEARCH_PATTERNS)
+
     try:
         data = await core_request(
             "/chat",
@@ -122,6 +257,14 @@ async def handle_free_text(message: types.Message):
         )
         reply = data.get("reply", "No response from core.")
         await message.reply(reply)
+
+        if is_research:
+            run_id_match = re.search(r"Run ID:\s*(\d+)", reply)
+            if run_id_match:
+                run_id = int(run_id_match.group(1))
+                topic = extract_research_topic(text)
+                asyncio.create_task(poll_research_and_send(message.chat.id, run_id, topic))
+
     except httpx.HTTPStatusError as e:
         logger.error("Core API error: %s", e)
         await message.reply("Core API error. Check logs.")

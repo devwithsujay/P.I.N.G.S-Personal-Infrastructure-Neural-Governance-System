@@ -98,7 +98,7 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     if (messages.length === 0 && sessionId) {
       getSessionMessages(sessionId).then(res => {
-        const serverMessages = res?.messages || res?.turns || []
+        const serverMessages = Array.isArray(res) ? res : res?.messages || res?.turns || []
         if (serverMessages.length > 0) {
           setMessages(serverMessages.map((m, i) => ({
             id: m.id || `hist-${i}-${Date.now()}`,
