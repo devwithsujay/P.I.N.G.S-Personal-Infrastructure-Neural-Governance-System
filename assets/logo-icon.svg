@@ -1,0 +1,10 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>P.I.N.G.S icon</title>
+<desc>Center dot with three expanding ping rings</desc>
+
+<g transform="translate(100,100)">
+  <circle cx="0" cy="0" r="80" fill="none" stroke="#2f6fed" stroke-width="2" opacity="0.3"/>
+  <circle cx="0" cy="0" r="52" fill="none" stroke="#2f6fed" stroke-width="2" opacity="0.55"/>
+  <circle cx="0" cy="0" r="12" fill="#2f6fed"/>
+</g>
+</svg>
