@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/logo-full.svg" width="256" height="256" alt="P.I.N.G.S logo" />
+<img src="./assets/logo-full.svg" width="512" height="512" alt="P.I.N.G.S logo" />
 
 # P.I.N.G.S
 ### Personal Infrastructure & Neural Governance System
