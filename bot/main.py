@@ -98,23 +98,11 @@ async def poll_research_and_send(chat_id: int, run_id: int, topic: str):
                 last_progress = progress
 
             if status == "completed":
-                report = run_data.get("report", "")
-                if report:
-                    report_for_telegram = report.replace("---", "\n————————\n")
-                    chunk_size = 4000
-                    chunks = [report_for_telegram[i:i+chunk_size] for i in range(0, len(report_for_telegram), chunk_size)]
-                    for i, chunk in enumerate(chunks):
-                        try:
-                            await bot.send_message(chat_id, chunk)
-                        except Exception as e:
-                            logger.error(f"Failed to send report chunk {i+1}: {e}")
-                    try:
-                        html_url = f"{CORE_API}/research/{run_id}/report.html"
-                        await bot.send_message(chat_id, f"HTML report: {html_url}")
-                    except Exception as e:
-                        logger.error(f"Failed to send HTML link: {e}")
-                else:
-                    await bot.send_message(chat_id, "Research completed but no report was generated.")
+                try:
+                    html_url = f"{CORE_API}/research/{run_id}/report.html"
+                    await bot.send_message(chat_id, f"Research complete. PDF sent above.\nHTML report: {html_url}")
+                except Exception as e:
+                    logger.error(f"Failed to send completion message: {e}")
                 return
 
             if status == "failed":
