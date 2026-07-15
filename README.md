@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/pings_wordmarkdark.svg">
   <source media="(prefers-color-scheme: light)" srcset="./assets/pings_wordmarklight.svg">
-  <img alt="P.I.N.G.S" src="./assets/pings_wordmarklight.svg" width="400">
+  <img alt="P.I.N.G.S" src="./assets/pings_wordmarklight.svg" width="800">
 </picture>
 
 A self-hosted AI assistant platform combining a Telegram bot, FastAPI brain, vector memory, web search, and a React dashboard — all orchestrated with Docker.
