@@ -1,56 +1,87 @@
-# P.I.N.G.S — Personal Infrastructure & Neural Governance System
+<div align="center">
+
+<img src="./assets/logo-icon.svg" width="96" height="96" alt="P.I.N.G.S logo" />
+
+# P.I.N.G.S
+### Personal Infrastructure & Neural Governance System
 
 A self-hosted AI assistant platform combining a Telegram bot, FastAPI brain, vector memory, web search, and a React dashboard — all orchestrated with Docker.
 
----
+![Docker](https://img.shields.io/badge/Docker-24%2B-2496ED?logo=docker&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)
+![License](https://img.shields.io/badge/License-Private-red)
 
-## Features
-
-- **Telegram Bot** — Chat, upload photos/documents, switch AI models, run research queries, view/clear history
-- **AI Brain (FastAPI)** — Intent classification, agent dispatch, conversation memory
-- **Deep Research** — Multi-section research pipeline with source gathering, failure detection, and retry logic
-- **Research Discussion** — Ask follow-up questions about completed research directly in the web UI
-- **Host Execution** — Run shell commands, create folders, and manage files on the host machine via SSH
-- **HomeLab Management** — Start, stop, pause, and restart Docker containers from the web dashboard
-- **Zen AI Models** — 5 selectable models via opencode (MiMo V2.5, DeepSeek V4, Nemotron 3, Big Pickle, North Mini)
-- **Vision Support** — NVIDIA NIM for image analysis
-- **Vector Memory** — ChromaDB for semantic search over conversation history
-- **Web Search** — SearXNG self-hosted search engine
-- **Notifications** — ntfy for alerts and research completion
-- **Web Dashboard** — React frontend with chat, research, history, and homelab views
-- **Reverse Proxy** — nginx with TLS, rate limiting, WebSocket support
-- **Persona System** — Configurable AI personality and safety rules
+</div>
 
 ---
 
-## Architecture
+## 📋 Table of Contents
 
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Quick Start](#-quick-start)
+- [Telegram Bot Commands](#-telegram-bot-commands)
+- [Deep Research Pipeline](#-deep-research-pipeline)
+- [HomeLab Management](#-homelab-management)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [API Endpoints](#-api-endpoints)
+- [Tech Stack](#-tech-stack)
+- [License](#-license)
+
+---
+
+## ✨ Features
+
+| | |
+|---|---|
+| 🤖 **Telegram Bot** | Chat, upload photos/documents, switch AI models, run research queries, view/clear history |
+| 🧠 **AI Brain (FastAPI)** | Intent classification, agent dispatch, conversation memory |
+| 🔬 **Deep Research** | Multi-section research pipeline with source gathering, failure detection, and retry logic |
+| 💬 **Research Discussion** | Ask follow-up questions about completed research directly in the web UI |
+| 🖥️ **Host Execution** | Run shell commands, create folders, and manage files on the host machine via SSH |
+| 🏠 **HomeLab Management** | Start, stop, pause, and restart Docker containers from the web dashboard |
+| 🎭 **Zen AI Models** | 5 selectable models via opencode (MiMo V2.5, DeepSeek V4, Nemotron 3, Big Pickle, North Mini) |
+| 👁️ **Vision Support** | NVIDIA NIM for image analysis |
+| 🗂️ **Vector Memory** | ChromaDB for semantic search over conversation history |
+| 🔍 **Web Search** | SearXNG self-hosted search engine |
+| 🔔 **Notifications** | ntfy for alerts and research completion |
+| 📊 **Web Dashboard** | React frontend with chat, research, history, and homelab views |
+| 🔒 **Reverse Proxy** | nginx with TLS, rate limiting, WebSocket support |
+| 🎙️ **Persona System** | Configurable AI personality and safety rules |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    U[User]
+    U -->|Telegram| BOT[pings-bot]
+    U -->|Browser| NGINX[pings-nginx]
+
+    BOT --> CORE[pings-core - FastAPI]
+    NGINX --> WEB[pings-web - React]
+    NGINX --> CORE
+
+    CORE --> CHROMA[(ChromaDB<br/>vectors)]
+    CORE --> SEARX[SearXNG<br/>search]
+    CORE --> NTFY[ntfy<br/>notifications]
+    CORE --> OC[opencode]
+
+    OC --> ZEN[Zen Models]
+    OC --> NIM[NIM Vision]
 ```
-User
-  ├── Telegram ──→ pings-bot ──→ pings-core (FastAPI)
-  └── Browser  ──→ pings-nginx ──→ pings-web (React)
-                                     pings-core (API:8002)
-                                         │
-                         ┌───────────────┼───────────────┐
-                         ▼               ▼               ▼
-                     ChromaDB        SearXNG          ntfy
-                     (vectors)       (search)      (notifs)
-                                         │
-                                     opencode
-                                         │
-                                 ┌───────┴───────┐
-                                 ▼               ▼
-                             Zen Models      NIM Vision
-```
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Docker 24+
 - Docker Compose v2
-- A Telegram bot token (from @BotFather)
+- A Telegram bot token (from `@BotFather`)
 - SSH key configured on the host machine (for host commands)
 
 ### 1. Clone and configure
@@ -68,6 +99,7 @@ chmod +x scripts/setup.sh
 ```
 
 ### 3. Access
+
 | Service | URL |
 |---------|-----|
 | Web Dashboard | http://localhost |
@@ -81,7 +113,7 @@ Open Telegram, find your bot, and send `/start`.
 
 ---
 
-## Telegram Bot Commands
+## 🤖 Telegram Bot Commands
 
 | Command | Description |
 |---------|-------------|
@@ -92,7 +124,7 @@ Open Telegram, find your bot, and send `/start`.
 
 ---
 
-## Deep Research Pipeline
+## 🔬 Deep Research Pipeline
 
 The research system performs multi-section analysis with:
 
@@ -102,20 +134,17 @@ The research system performs multi-section analysis with:
 4. **Assembly** — Combines sections with proper spacing and metadata
 5. **Quality Checks** — Cross-section contradiction detection, word count validation
 
-### Failure Handling
-- Automatic retry with exponential backoff (2s → 4s → 8s → 16s)
-- Maximum 4 call attempts per section
-- Failed sections retried in isolation during assembly
-- `SectionGenerationError` raised if any section fails after all retries
+> [!NOTE]
+> Automatic retry uses exponential backoff (2s → 4s → 8s → 16s), maximum 4 call attempts per section. Failed sections are retried in isolation during assembly; a `SectionGenerationError` is raised if any section fails after all retries.
 
-### Report Formatting
+**Report formatting**
 - Sections separated by horizontal rules (`---`)
 - Paragraph breaks normalized for consistent rendering
 - Telegram-safe dividers (Unicode box-drawing chars) for bot delivery
 
 ---
 
-## HomeLab Management
+## 🏠 HomeLab Management
 
 Access the HomeLab tab in the web dashboard to:
 
@@ -126,7 +155,10 @@ Access the HomeLab tab in the web dashboard to:
 
 ---
 
-## Project Structure
+## 📁 Project Structure
+
+<details>
+<summary>Click to expand full tree</summary>
 
 ```
 pings-core-v2/
@@ -171,21 +203,32 @@ pings-core-v2/
 └── README.md
 ```
 
+</details>
+
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 All configuration is done via environment variables in `.env`. See [`.env.example`](.env.example) for the full list.
 
-Key variables:
-- `TELEGRAM_BOT_TOKEN` — Your bot token
-- `TELEGRAM_ALLOWED_USER_ID` — Your Telegram user ID (for access control)
-- `BRAIN_SECRET_KEY` — Auto-generated, do not change after first run
-- `DEFAULT_ZEN_MODEL` — Starting AI model (default: opencode/mimo-v2.5-free)
+**Key variables**
+
+| Variable | Description |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | Your bot token |
+| `TELEGRAM_ALLOWED_USER_ID` | Your Telegram user ID (for access control) |
+| `BRAIN_SECRET_KEY` | Auto-generated |
+| `DEFAULT_ZEN_MODEL` | Starting AI model (default: `opencode/mimo-v2.5-free`) |
+
+> [!WARNING]
+> Do not change `BRAIN_SECRET_KEY` after first run.
 
 ---
 
-## API Endpoints
+## 🔌 API Endpoints
+
+<details>
+<summary>Click to expand full API reference</summary>
 
 ### Chat
 - `POST /chat` — Send message, get AI response
@@ -215,9 +258,11 @@ Key variables:
 - `DELETE /history` — Clear all history
 - `DELETE /history/{id}` — Clear specific session
 
+</details>
+
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -233,6 +278,6 @@ Key variables:
 
 ---
 
-## License
+## 📄 License
 
 Private — for personal use only.
