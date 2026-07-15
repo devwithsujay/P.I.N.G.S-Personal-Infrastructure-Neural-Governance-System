@@ -35,6 +35,7 @@ A self-hosted AI assistant platform combining a Telegram bot, FastAPI brain, vec
 ## ✨ Features
 
 | | |
+|---|---|
 | 🤖 **Telegram Bot** | Chat, upload photos/documents, switch AI models, run research queries, view/clear history |
 | 🧠 **AI Brain (FastAPI)** | Intent classification, agent dispatch, conversation memory |
 | 🔬 **Deep Research** | Multi-section research pipeline with source gathering, failure detection, and retry logic |
