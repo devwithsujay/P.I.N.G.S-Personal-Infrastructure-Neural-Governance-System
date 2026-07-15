@@ -11,7 +11,7 @@ A self-hosted AI assistant platform combining a Telegram bot, FastAPI brain, vec
 ![Docker](https://img.shields.io/badge/Docker-24%2B-2496ED?logo=docker&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)
-![OpenCode](https://img.shields.io/badge/OpenCode-AI-6366f1?logo=robot&logoColor=white)
+![OpenCode](https://img.shields.io/badge/OpenCode-AI-6366f1?logo=opencode&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-red)
 
 </div>
