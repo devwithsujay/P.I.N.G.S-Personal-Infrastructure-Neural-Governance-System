@@ -1,9 +1,6 @@
 <div align="center">
 
-<img src="./assets/pings_logo_concept.svg" width="720" height="720" alt="P.I.N.G.S logo" />
-
-# P.I.N.G.S
-### Personal Infrastructure & Neural Governance System
+<img src=".assets/pings_wordmarkdark.svg" width="720" height="720" alt="P.I.N.G.S logo" />
 
 A self-hosted AI assistant platform combining a Telegram bot, FastAPI brain, vector memory, web search, and a React dashboard — all orchestrated with Docker.
 
