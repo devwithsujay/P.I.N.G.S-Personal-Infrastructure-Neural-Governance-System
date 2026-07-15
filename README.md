@@ -72,13 +72,9 @@ chmod +x scripts/setup.sh
 |---------|-----|
 | Web Dashboard | http://localhost |
 | API | http://localhost:8002 |
-| Portainer | http://localhost:9000 |
 | SearXNG | http://localhost:8081 |
 | ChromaDB | http://localhost:8100 |
 | ntfy | http://localhost:8090 |
-| AdGuard Home | http://localhost:3000 |
-| Glance | http://localhost:8080 |
-| Syncthing | http://localhost:8384 |
 
 ### 4. Start chatting
 Open Telegram, find your bot, and send `/start`.
