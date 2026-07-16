@@ -5,6 +5,11 @@ const ThemeContext = createContext(null)
 const THEME_KEY = 'pings-theme'
 const DEFAULT_THEME = 'claude'
 
+function getSystemTheme() {
+  if (typeof window === 'undefined') return null
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'voltagent' : null
+}
+
 const THEMES = {
   'claude': { name: 'Claude Editorial', accent: '#cc785c' },
   'mistral': { name: 'Mistral AI', accent: '#fa520f' },
@@ -44,14 +49,28 @@ function applyThemeVars(themeId) {
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
     try {
-      return localStorage.getItem(THEME_KEY) || DEFAULT_THEME
+      const saved = localStorage.getItem(THEME_KEY)
+      if (saved && THEMES[saved]) return saved
+      return getSystemTheme() || DEFAULT_THEME
     } catch {
-      return DEFAULT_THEME
+      return getSystemTheme() || DEFAULT_THEME
     }
   })
 
   useEffect(() => {
     applyThemeVars(theme)
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e) => {
+      const saved = localStorage.getItem(THEME_KEY)
+      if (saved) return
+      applyThemeVars(e.matches ? 'voltagent' : DEFAULT_THEME)
+      setThemeState(e.matches ? 'voltagent' : DEFAULT_THEME)
+    }
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
 
   const setTheme = useCallback((id) => {

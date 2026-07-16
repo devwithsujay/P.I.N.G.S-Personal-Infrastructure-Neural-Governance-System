@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import axios from 'axios'
+import { getHomelabStatus, testSshConnection, saveSshConfig, containerAction } from '../api'
 import { useToast } from '../components/Toast'
 import { Button } from '@heroui/react'
 import { Terminal as XTerm } from '@xterm/xterm'
@@ -104,19 +104,19 @@ function TerminalPanel({ active }) {
   return (
     <div className="slide-up" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-subtle, #30363d)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#161b22', borderBottom: '1px solid #30363d' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', gap: '6px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f57' }} />
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#febc2e' }} />
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#28c840' }} />
           </div>
-          <span style={{ fontSize: '12px', color: '#8b949e', fontFamily: 'monospace', marginLeft: '8px' }}>pings@host ~ bash</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace', marginLeft: '8px' }}>pings@host ~ bash</span>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span id="term-status-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f85149' }} />
-            <span id="term-status" style={{ fontSize: '12px', color: '#8b949e' }}>Connecting...</span>
+            <span id="term-status" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Connecting...</span>
           </div>
         </div>
-        <div ref={containerRef} onClick={handleClick} style={{ flex: 1, background: '#0d1117', cursor: 'text' }} />
+        <div ref={containerRef} onClick={handleClick} style={{ flex: 1, background: 'var(--bg-base)', cursor: 'text' }} />
       </div>
     </div>
   )
@@ -135,11 +135,11 @@ export default function HomeLab() {
 
   const loadStatus = useCallback(async () => {
     try {
-      const res = await axios.get('/api/homelab/status')
-      setStatus(res.data)
-      setContainers(res.data?.containers || [])
-      setSystem(res.data?.system || null)
-      if (res.data?.ssh_config) setSshConfig(res.data.ssh_config)
+      const res = await getHomelabStatus()
+      setStatus(res)
+      setContainers(res?.containers || [])
+      setSystem(res?.system || null)
+      if (res?.ssh_config) setSshConfig(res.ssh_config)
     } catch {}
   }, [])
 
@@ -153,24 +153,24 @@ export default function HomeLab() {
     setLoading(true)
     setTestResult(null)
     try {
-      const res = await axios.post('/api/homelab/ssh/test', sshConfig)
-      setTestResult({ success: true, message: res.data?.message || 'Connected successfully' })
+      const res = await testSshConnection(sshConfig)
+      setTestResult({ success: true, message: res?.message || 'Connected successfully' })
       toast.success('SSH connection successful')
     } catch (err) {
-      setTestResult({ success: false, message: err.response?.data?.detail || err.message })
+      setTestResult({ success: false, message: err.message })
       toast.error('SSH connection failed')
     } finally { setLoading(false) }
   }
 
   const handleSaveSsh = async () => {
-    try { await axios.put('/api/homelab/ssh', sshConfig); toast.success('SSH config saved') }
+    try { await saveSshConfig(sshConfig); toast.success('SSH config saved') }
     catch { toast.error('Failed to save SSH config') }
   }
 
   const handleContainerAction = async (action, name) => {
     setActioningName(name)
     try {
-      await axios.post(`/api/homelab/containers/${action}/${name}`)
+      await containerAction(action, name)
       toast.success(`${action}ed ${name}`)
       loadStatus()
     } catch (err) {

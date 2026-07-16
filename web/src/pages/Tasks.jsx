@@ -76,7 +76,7 @@ const TaskCard = React.memo(function TaskCard({ task, index, onEdit, onDelete })
 
 function Column({ column, tasks, onEdit, onDelete }) {
   return (
-    <div className="flex-1 min-w-0 flex flex-col">
+    <div className="flex-1 min-w-[240px] md:min-w-0 flex flex-col">
       <div className="flex items-center gap-2 px-2 py-2 mb-2">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: column.color, boxShadow: `0 0 8px ${column.color}44` }} />
         <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">{column.title}</span>
@@ -225,7 +225,7 @@ export default function Tasks() {
 
       <div className="flex-1 overflow-hidden px-4 py-4">
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="flex gap-4 h-full">
+          <div className="flex gap-4 h-full overflow-x-auto md:overflow-visible">
             {tasksByColumn.map(col => (
               <Column key={col.id} column={col} tasks={col.tasks} onEdit={startEdit} onDelete={(id) => setDeleteId(id)} />
             ))}

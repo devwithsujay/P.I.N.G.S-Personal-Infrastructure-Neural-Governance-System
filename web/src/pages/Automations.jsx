@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import axios from 'axios'
 import { Button } from '@heroui/react'
 import { useToast } from '../components/Toast'
-
-const CORE_API = import.meta.env.VITE_CORE_URL || '/api'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { getAutomations, createAutomation, updateAutomation, deleteAutomation, getAutomationRuns, runAutomation } from '../api'
 
 export default function Automations() {
   const [automations, setAutomations] = useState([])
@@ -13,11 +12,12 @@ export default function Automations() {
   const [form, setForm] = useState({ name: '', instructions: '', schedule_time: '07:00', timezone: 'Asia/Kolkata' })
   const [runs, setRuns] = useState({})
   const [expandedId, setExpandedId] = useState(null)
+  const [deleteId, setDeleteId] = useState(null)
   const toast = useToast()
 
   const fetchAutomations = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${CORE_API}/automations`)
+      const data = await getAutomations()
       setAutomations(data)
     } catch (e) {
       toast.error('Failed to load automations')
@@ -30,7 +30,7 @@ export default function Automations() {
 
   const fetchRuns = async (id) => {
     try {
-      const { data } = await axios.get(`${CORE_API}/automations/${id}/runs`)
+      const data = await getAutomationRuns(id)
       setRuns(prev => ({ ...prev, [id]: data }))
     } catch (e) {
       toast.error('Failed to load runs')
@@ -56,10 +56,10 @@ export default function Automations() {
       fd.append('timezone', form.timezone)
 
       if (editing) {
-        await axios.patch(`${CORE_API}/automations/${editing.id}`, fd)
+        await updateAutomation(editing.id, fd)
         toast.success('Automation updated')
       } else {
-        await axios.post(`${CORE_API}/automations`, fd)
+        await createAutomation(fd)
         toast.success('Automation created')
       }
       setShowForm(false)
@@ -75,7 +75,7 @@ export default function Automations() {
     try {
       const fd = new FormData()
       fd.append('active', active ? '0' : '1')
-      await axios.patch(`${CORE_API}/automations/${id}`, fd)
+      await updateAutomation(id, fd)
       fetchAutomations()
     } catch (e) {
       toast.error('Failed to toggle')
@@ -84,7 +84,7 @@ export default function Automations() {
 
   const handleRunNow = async (id) => {
     try {
-      await axios.post(`${CORE_API}/automations/${id}/run`)
+      await runAutomation(id)
       toast.success('Briefing triggered')
       setTimeout(() => fetchRuns(id), 2000)
     } catch (e) {
@@ -92,11 +92,12 @@ export default function Automations() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this automation?')) return
+  const handleDelete = async () => {
+    if (!deleteId) return
     try {
-      await axios.delete(`${CORE_API}/automations/${id}`)
+      await deleteAutomation(deleteId)
       toast.success('Deleted')
+      setDeleteId(null)
       fetchAutomations()
     } catch (e) {
       toast.error('Failed to delete')
@@ -227,7 +228,7 @@ export default function Automations() {
                 <Button size="sm" onPress={() => handleEdit(a)} className="rounded-lg text-xs" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
                   Edit
                 </Button>
-                <Button size="sm" onPress={() => handleDelete(a.id)} className="rounded-lg text-xs" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                <Button size="sm" onPress={() => setDeleteId(a.id)} className="rounded-lg text-xs" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
                   Delete
                 </Button>
               </div>
@@ -269,6 +270,16 @@ export default function Automations() {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Automation"
+        message="Are you sure you want to delete this automation? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }
