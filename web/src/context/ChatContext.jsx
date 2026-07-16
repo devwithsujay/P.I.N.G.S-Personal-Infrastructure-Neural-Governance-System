@@ -3,6 +3,8 @@ import { sendChat, chatUpload, getAgents, getModels, getSessionMessages, startRe
 
 const ChatContext = createContext(null)
 
+const MAX_CACHED_MESSAGES = 500
+
 function generateSessionId() {
   return crypto.randomUUID?.() || `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
@@ -32,7 +34,10 @@ export function ChatProvider({ children }) {
   // Persist messages to localStorage
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem('pings-chat-messages', JSON.stringify(messages))
+      const toStore = messages.length > MAX_CACHED_MESSAGES
+        ? messages.slice(messages.length - MAX_CACHED_MESSAGES)
+        : messages
+      localStorage.setItem('pings-chat-messages', JSON.stringify(toStore))
     }
   }, [messages])
 
@@ -109,7 +114,9 @@ export function ChatProvider({ children }) {
             timestamp: m.timestamp || new Date().toISOString(),
           })))
         }
-      }).catch(() => {})
+      }).catch(() => {
+        console.warn('Failed to load chat history from server')
+      })
     }
   }, [])
 

@@ -6,7 +6,7 @@ import EmptyState from '../components/EmptyState'
 
 const AGENT_COLORS = {
   default: 'var(--accent)',
-  pings: '#6c5ce7',
+  pings: 'var(--accent)',
   researcher: '#00cec9',
   coder: '#fdcb6e',
   planner: '#e17055',

@@ -149,7 +149,7 @@ export default function Calendar() {
       </div>
 
       {selectedDate && (
-        <div className="w-80 border-l flex flex-col overflow-hidden" style={{ borderColor: 'var(--border-subtle)', background: 'rgba(var(--accent-rgb), 0.02)' }}>
+        <div className="hidden md:flex w-80 border-l flex-col overflow-hidden" style={{ borderColor: 'var(--border-subtle)', background: 'rgba(var(--accent-rgb), 0.02)' }}>
           <div className="px-4 py-3 glass-strong border-b flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
             <div>
               <div className="text-sm font-medium text-text-primary">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
@@ -223,6 +223,50 @@ export default function Calendar() {
           </div>
         </div>
       )}
+
+      {selectedDate && (
+        <div className="md:hidden fixed inset-0 z-40" onClick={() => setSelectedDate(null)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div
+            className="absolute bottom-0 left-0 right-0 max-h-[70vh] rounded-t-2xl overflow-hidden flex flex-col"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <div>
+                <div className="text-sm font-medium text-text-primary">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+                <div className="text-xs text-text-muted">{selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button isIconOnly aria-label="Add task" variant="light" onPress={() => openAddForDate(selectedDate)} className="p-1.5 rounded-xl hover:bg-accent/15 text-accent transition-all">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </Button>
+                <Button isIconOnly aria-label="Close" variant="light" onPress={() => setSelectedDate(null)} className="p-1.5 rounded-xl text-text-muted hover:text-text-primary">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {selectedTasks.length === 0 && !showForm && (
+                <div className="text-center py-8">
+                  <div className="text-text-muted text-sm mb-3">No tasks for this day</div>
+                  <Button variant="light" onPress={() => openAddForDate(selectedDate)} className="btn-primary !text-xs">+ Add Task</Button>
+                </div>
+              )}
+              {selectedTasks.map(task => (
+                <div key={task.id} className="card p-3">
+                  <div className="flex items-center gap-2">
+                    {task.due_time && <span className="text-xs text-text-muted font-mono">{task.due_time.slice(0, 5)}</span>}
+                    <span className="text-sm font-medium text-text-primary">{task.title}</span>
+                  </div>
+                  {task.description && <p className="text-xs text-text-secondary mt-1 line-clamp-2">{task.description}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <ConfirmDialog open={!!deleteTaskId} title="Delete Task" message="This calendar task will be permanently removed." confirmLabel="Delete" danger onConfirm={() => handleDelete(deleteTaskId)} onCancel={() => setDeleteTaskId(null)} />
     </div>
   )
