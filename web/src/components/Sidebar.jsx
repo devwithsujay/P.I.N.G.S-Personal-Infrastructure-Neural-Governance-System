@@ -56,7 +56,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
   }
 
   return (
-    <aside className={`sidebar-desktop fixed left-0 top-0 h-full z-40 flex flex-col transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-64'}`} style={{ background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}>
+    <aside className={`sidebar-desktop hidden md:flex fixed left-0 top-0 h-full z-40 flex-col transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-64'}`} style={{ background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}>
       <SidebarBrand collapsed={collapsed} />
 
       <div className="px-3 mt-8 mb-3">
