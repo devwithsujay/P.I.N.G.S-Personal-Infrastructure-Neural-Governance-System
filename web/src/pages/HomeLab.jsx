@@ -238,7 +238,7 @@ export default function HomeLab() {
                             <td className="px-4 py-3 text-text-primary font-medium">{c.name || c.Names}</td>
                             <td className="px-4 py-3 text-text-secondary text-xs font-mono">{c.image || c.Image}</td>
                             <td className="px-4 py-3">
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${(c.status || c.state || c.Status || '').toLowerCase().includes('up') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${(() => { const s = (c.status || c.state || c.Status || '').toLowerCase(); if (s.includes('paused')) return 'bg-yellow-500/20 text-yellow-400'; if (s.includes('up') || s.includes('running')) return 'bg-green-500/20 text-green-400'; return 'bg-red-500/20 text-red-400'; })()}`}>
                                 {c.status || c.state || c.Status || 'unknown'}
                               </span>
                             </td>
