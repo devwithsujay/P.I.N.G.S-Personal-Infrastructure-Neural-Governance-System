@@ -333,17 +333,17 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #fff !important;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light, var(--accent))) !important;
   border: none;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.25s ease;
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb, 128, 128, 128), 0.3);
 }
 .btn-deep:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb, 128, 128, 128), 0.5);
 }
 .btn-deep:active {
   transform: translateY(0);
@@ -555,7 +555,7 @@
 
 .sidebar-link:hover {
   color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(var(--accent-rgb, 128, 128, 128), 0.06);
 }
 
 .sidebar-link.active {

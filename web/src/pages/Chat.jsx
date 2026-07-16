@@ -23,6 +23,20 @@ const AGENT_AVATARS = {
   'homelab-monitor': 'H',
 }
 
+function exportChat(messages) {
+  if (!messages || messages.length === 0) return
+  try {
+    const text = messages.map(m => `[${m.role.toUpperCase()}] ${m.content}`).join('\n\n')
+    const blob = new Blob([text], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pings-chat-${new Date().toISOString().slice(0, 10)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {}
+}
+
 function CodeBlock({ language, children }) {
   const [copied, setCopied] = useState(false)
   const codeRef = useRef(null)
@@ -529,18 +543,4 @@ export default function Chat() {
       </div>
     </div>
   )
-}
-
-function exportChat(messages) {
-  if (!messages || messages.length === 0) return
-  try {
-    const text = messages.map(m => `[${m.role.toUpperCase()}] ${m.content}`).join('\n\n')
-    const blob = new Blob([text], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `pings-chat-${new Date().toISOString().slice(0, 10)}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {}
 }
